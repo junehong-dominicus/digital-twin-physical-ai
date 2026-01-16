@@ -1,16 +1,47 @@
-# LLM-Powered Digital Twin for Physical Systems  
-### with Drones, Robots, and IoT Sensors
+# LLM-Powered Digital Twin for Physical AI  
+### Multi-Agent • Spatial • Interactive
 
 ## Overview
 
-This project implements a **real-time, multi-agent Digital Twin** that mirrors
-a physical system composed of **static IoT sensors, mobile robots, and autonomous drones**.
+This project implements a **research-grade Digital Twin for Physical AI systems** that integrates:
 
-The Digital Twin maintains live system state, detects anomalies, evaluates health,
-and integrates a **LangChain-powered LLM agent** that can reason about the system,
-explain behavior in natural language, and support mission-level decision-making.
+- Static IoT sensors  
+- Mobile robots  
+- Autonomous drones  
+- Spatial 3D perception  
+- LLM-based reasoning and explanation  
 
-This project explores the intersection of **Physical AI, Robotics, and LLM-based reasoning**.
+The Digital Twin maintains a **live internal representation of the physical world**, models **embodied agents**, and uses a **LangChain-powered cognitive layer** to reason about system behavior, anomalies, and next actions.
+
+The project is developed in **phases**, evolving from telemetry-driven twins to **spatial, multi-agent Physical AI**.
+
+---
+
+## Project Phases
+
+### Phase 1 — State-Centric Digital Twin
+- IoT telemetry ingestion (MQTT)
+- System Twin + Agent Twins
+- Rule-based health evaluation
+- Anomaly detection
+- LLM reasoning with RAG
+- Dashboards and natural language queries
+
+📄 See: `digital_twin_physical_ai_phase_2.md`
+
+---
+
+### Phase 2 — Spatial & Embodied Physical AI *(Current)*
+
+Phase 2 upgrades the Digital Twin with **spatial intelligence and embodiment**.
+
+New capabilities:
+- Multi-agent modeling (robots + drones)
+- 3D spatial environment representation
+- Interactive visualization
+- Spatially grounded reasoning
+
+📄 See: `docs/phase2.md`
 
 ---
 
@@ -21,69 +52,81 @@ This project explores the intersection of **Physical AI, Robotics, and LLM-based
 ### Architecture Layers
 
 1. **Physical Layer**
-   - Static IoT sensors (temperature, vibration, power, environment)
-   - Mobile robots (joint states, load, motor health)
-   - Autonomous drones (position, battery, flight status, perception metadata)
+   - IoT sensors (environment, power, vibration)
+   - Mobile robots (joints, load, motor health)
+   - Autonomous drones (pose, battery, perception)
 
-2. **Data Ingestion Layer**
-   - MQTT for real-time telemetry
-   - Optional ROS2 → MQTT bridge for robots and drones
+2. **Perception & Spatial Layer (Phase 2)**
+   - SLAM / pose estimation
+   - Gaussian Splatting–based 3D reconstruction
+   - Spatial change detection
 
-3. **Digital Twin Core**
-   - System Twin (environment & infrastructure)
+3. **Data Ingestion Layer**
+   - MQTT telemetry
+   - Optional ROS2 → MQTT bridge
+
+4. **Digital Twin Core**
+   - System Twin (global environment)
    - Agent Twins (robots & drones)
-   - Rule-based evaluation
+   - Rules engine
    - Anomaly detection
 
-4. **Cognitive Layer**
-   - LangChain-powered LLM agent
+5. **Cognitive Layer**
+   - LangChain LLM agent
    - Retrieval-Augmented Generation (RAG)
-   - Natural language interaction & reasoning
+   - Context-aware reasoning
 
----
-
-## Features
-
-- 📡 Live IoT telemetry via MQTT
-- 🤖 **Mobile Digital Twins for robots**
-- 🚁 **Autonomous drone Digital Twins**
-- 📍 Real-time pose, battery, and health tracking
-- 🧠 Rule-based system and agent health evaluation
-- 🚨 Anomaly detection across sensors and agents
-- 🔗 LangChain-powered reasoning agent
-- 💬 Natural language interaction with the Digital Twin
-- 📊 Time-series visualization with Grafana
+6. **Interaction Layer**
+   - FastAPI
+   - Grafana dashboards
+   - Natural language interface
+   - Interactive 3D viewer
 
 ---
 
 ## Digital Twin Model
 
 ### System Twin
-Represents the global physical environment:
-- Infrastructure state
-- Environmental conditions
-- Aggregate health metrics
+Represents:
+- Global environment state
+- Infrastructure health
+- Spatial zones and history
 
 ### Agent Twins (Robots & Drones)
 
-Each robot or drone is modeled as an **independent agent twin**:
+Each embodied agent is modeled as an independent **Agent Twin**:
 
-- Position & velocity
+- Pose (position & orientation)
+- Velocity
 - Battery / power state
-- Health & fault status
+- Health & fault indicators
 - Active mission
-- Attached sensors
+- Perception context
 
-This enables **multi-agent physical system modeling** and future coordination logic.
+This enables **multi-agent reasoning and coordination**.
 
 ---
 
-## Example Questions the Twin Can Answer
+## Spatial Digital Twin (Phase 2)
+
+Phase 2 introduces a **spatial representation layer** powered by
+**Gaussian Splatting**:
+
+- Drones and robots capture RGB images and pose
+- 3D environment is reconstructed and updated
+- Spatial changes are detected and converted into structured events
+- The Digital Twin reasons over *spatial facts*, not raw pixels
+
+The LLM never consumes images directly — it reasons over **interpretable spatial state**.
+
+---
+
+## Example Questions the System Can Answer
 
 - *Why did drone alpha abort its inspection mission?*
 - *Is robot beta safe to continue operation under current load?*
-- *Which agent should inspect the detected anomaly?*
-- *What changed in system behavior over the last hour?*
+- *Which agent should inspect the detected structural change?*
+- *What changed in the environment since yesterday?*
 
 ---
 
@@ -100,41 +143,74 @@ This enables **multi-agent physical system modeling** and future coordination lo
 - MQTT (Mosquitto)
 - Optional ROS2 bridge
 - InfluxDB (time-series storage)
-- Vector Database (RAG)
+- Vector database (RAG)
 
 ### AI & Visualization
 - LangChain
 - Retrieval-Augmented Generation (RAG)
-- Grafana dashboards
+- Gaussian Splatting (3D spatial reconstruction)
+- Grafana
+- Interactive 3D viewer
+
+---
+
+## Repository Structure
+```
+digital-twin-physical-ai/
+├── backend/
+│ ├── twin/ # System & Agent Twins
+│ ├── agents/ # Robot & Drone logic
+│ └── cognition/ # LLM reasoning layer
+│
+├── spatial/
+│ ├── gaussian_splatting/
+│ ├── pose_sync/
+│ └── events/
+│
+├── visualization/
+│ ├── viewer/
+│ └── overlays/
+│
+├── architecture/
+│ └── system_diagram.png
+│
+├── docs/
+│ ├── phase1.md
+│ ├── phase2.md
+│ └── design_decisions.md
+│
+└── blog/
+```
 
 ---
 
 ## Why This Matters
 
-Traditional monitoring systems report metrics.
+Most monitoring systems report metrics.
 
-This Digital Twin:
-- **Maintains internal state**
-- **Understands physical agents**
-- **Reasons about cause and effect**
-- **Explains behavior in human language**
+This project demonstrates how to build **thinking physical systems** by:
+- Modeling embodied agents
+- Grounding AI in real spatial context
+- Separating perception, state, and cognition
+- Using LLMs for explanation and decision support — not control
 
-By integrating LLMs as a cognitive layer, this project demonstrates how
-**Physical AI systems can become explainable, interactive, and decision-aware**.
-
----
-
-## Future Work
-
-- Autonomous mission planning for drones and robots
-- Multi-agent coordination and task allocation
-- Predictive maintenance with ML models
-- Simulation ↔ real-world twin synchronization
-- 3D visualization of agent twins
+It represents a practical step toward **Physical AI and intelligent cyber-physical systems**.
 
 ---
 
-## Project Focus
+## Future Phases
 
-**Keywords**:  
-Digital Twin · Physical AI · Robotics · Drones · IoT · LangChain · RAG · Multi-Agent Systems
+Planned directions:
+- Autonomous mission planning
+- Multi-agent task allocation
+- Simulation ↔ real-world synchronization
+- Learned world models
+- Closed-loop autonomy experiments
+
+---
+
+## Keywords
+
+Digital Twin · Physical AI · Robotics · Drones · IoT · Gaussian Splatting ·  
+LangChain · RAG · Multi-Agent Systems · Spatial Intelligence
+
