@@ -51,7 +51,7 @@ digital-twin-physical-ai/
 │   └── data_flow.md
 │
 ├── hardware/
-│   ├── esp32_code/
+│   ├── IoT MCUs_code/
 │   └── sensor_wiring.md
 │
 ├── backend/
@@ -110,7 +110,7 @@ LLM-based reasoning agent.
 - Natural language interaction with the twin
 
 ## Tech Stack
-- ESP32, Sensors
+- IoT MCUs, Sensors
 - MQTT (Mosquitto)
 - Python, FastAPI
 - InfluxDB

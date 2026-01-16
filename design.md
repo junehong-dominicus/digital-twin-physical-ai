@@ -23,7 +23,7 @@ This is **not generic**; it’s something you can actually build, deploy, and sh
 ```
 ┌──────────────────────────────┐
 │      Physical Layer          │
-│  ESP32 + Sensors             │
+│  IoT MCUs + Sensors             │
 │  (Temp, Vibration, RPM)      │
 └──────────────┬───────────────┘
                │ MQTT
@@ -75,7 +75,7 @@ This is **not generic**; it’s something you can actually build, deploy, and sh
 
 ### Hardware
 
-* **ESP32**
+* **IoT MCUs**
 * Sensors:
 
   * Temperature (DS18B20 / DHT22)
@@ -331,7 +331,7 @@ This is **exactly** what companies mean when they say *“Digital Twin + AI”*.
 
 I can now:
 
-1. Write **full code** (ESP32 → Backend → LangChain)
+1. Write **full code** (IoT MCUs → Backend → LangChain)
 2. Design **ML anomaly detection**
 3. Create **GitHub repo structure**
 4. Turn this into a **blog post + portfolio demo**

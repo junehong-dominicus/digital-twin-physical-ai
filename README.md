@@ -17,7 +17,7 @@ LLM-based reasoning agent.
 - Natural language interaction with the twin
 
 ## Tech Stack
-- ESP32, Sensors
+- IoT MCUs, Sensors
 - MQTT (Mosquitto)
 - Python, FastAPI
 - InfluxDB

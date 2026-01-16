@@ -1,6 +1,6 @@
 # Data Flow
 
-1. **Sensors (ESP32)** -> MQTT Broker (Topic: `sensors/telemetry`)
+1. **Sensors (IoT MCUs)** -> MQTT Broker (Topic: `sensors/telemetry`)
 2. **MQTT Listener** -> Ingests data -> Updates **Twin State**
 3. **Twin State** -> Runs **Rules** & **Anomaly Detection**
 4. **Twin State** -> Persisted to **InfluxDB**
