@@ -41,7 +41,7 @@ New capabilities:
 - Interactive visualization
 - Spatially grounded reasoning
 
-📄 See: `docs/phase2.md`
+📄 See: `digital_twin_physical_ai_phase_2.md`
 
 ---
 
