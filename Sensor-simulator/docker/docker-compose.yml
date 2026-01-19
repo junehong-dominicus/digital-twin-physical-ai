@@ -1,0 +1,11 @@
+version: "3"
+services:
+  simulator:
+    build: ..
+    ports:
+      - "5020:5020"
+      - "47808:47808/udp"
+  mqtt:
+    image: eclipse-mosquitto
+    ports:
+      - "1883:1883"

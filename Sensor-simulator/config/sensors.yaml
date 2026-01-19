@@ -1,0 +1,35 @@
+building: HQ
+zone: Floor1
+
+sensors:
+  - name: temperature
+    type: analog
+    unit: C
+    base: 22.0
+    min: -10
+    max: 50
+    noise: 0.2
+    update_ms: 1000
+    protocols: [modbus, bacnet, mqtt]
+
+  - name: humidity
+    type: analog
+    unit: "%"
+    base: 45.0
+    min: 0
+    max: 100
+    noise: 0.5
+    update_ms: 2000
+    protocols: [modbus, bacnet, mqtt]
+
+  - name: motion
+    type: binary
+    base: 0
+    protocols: [bacnet, mqtt]
+
+  - name: smoke
+    type: binary
+    base: 0
+    protocols: [modbus, bacnet, mqtt]
+    alarm:
+      trigger_probability: 0.01

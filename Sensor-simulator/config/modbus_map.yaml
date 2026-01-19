@@ -1,0 +1,10 @@
+holding_registers:
+  40001:
+    sensor: temperature
+    scale: 0.1
+    writable: true
+
+  40002:
+    sensor: humidity
+    scale: 0.1
+    writable: true
