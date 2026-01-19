@@ -1,0 +1,33 @@
+version: "3.9"
+
+services:
+  simulator:
+    image: simulator:latest
+    container_name: simulator
+    ports:
+      - "9100:9100"     # Prometheus metrics
+      - "8080:8080"     # REST fault injection
+    networks: [monitoring]
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml
+    ports:
+      - "9090:9090"
+    networks: [monitoring]
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    ports:
+      - "3000:3000"
+    networks: [monitoring]
+
+networks:
+  monitoring:

@@ -1,0 +1,14 @@
+groups:
+- name: bacnet_alerts
+  rules:
+  - alert: BACnetCOVStorm
+    expr: rate(bacnet_cov_notifications_total[10s]) > 200
+    for: 30s
+    labels:
+      severity: critical
+    annotations:
+      description: "COV storm detected"
+
+  - alert: ScheduleNotApplied
+    expr: bacnet_schedule_active == 1 and bacnet_active_priority != 8
+    for: 1m

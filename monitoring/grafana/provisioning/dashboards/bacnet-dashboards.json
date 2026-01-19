@@ -1,0 +1,37 @@
+{
+  "type": "timeseries",
+  "title": "Sensor Value",
+  "targets": [
+    {
+      "expr": "sensor_value{id=\"$sensor_id\"}"
+    }
+  ]
+}
+{
+  "type": "stat",
+  "title": "Active BACnet Priority",
+  "targets": [
+    {
+      "expr": "bacnet_active_priority{object=\"$bacnet_object\"}"
+    }
+  ],
+  "options": {
+    "reduceOptions": {
+      "calcs": ["lastNotNull"]
+    }
+  }
+}
+{
+  "type": "stat",
+  "title": "Schedule Active",
+  "targets": [
+    {
+      "expr": "bacnet_schedule_active{id=\"$schedule_id\"}"
+    }
+  ]
+}
+{
+  "name": "sensor_id",
+  "type": "query",
+  "query": "label_values(sensor_value, id)"
+}
