@@ -6,11 +6,16 @@ from protocols.modbus_server import run_modbus
 from protocols.bacnet_server import run_bacnet
 from protocols.mqtt_client import run_mqtt
 
-registry = SensorRegistry()
+try:
+    registry = SensorRegistry()
 
-registry.add(Sensor("temperature", "C", 22.0, -10, 50))
-registry.add(Sensor("humidity", "%", 50.0, 0, 100))
-registry.add(Sensor("pressure", "Pa", 101325, 98000, 105000))
+    registry.add(Sensor("temperature", "C", 22.0, -10, 50, writable=True))
+    registry.add(Sensor("humidity", "%", 50.0, 0, 100, writable=True))
+    registry.add(Sensor("pressure", "Pa", 101325, 98000, 105000, writable=True))
+except Exception as e:
+    with open("startup_error.log", "a") as f:
+        f.write(f"Registry initialization error: {e}\n")
+    raise
 
 def sensor_loop():
     while True:

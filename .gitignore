@@ -208,3 +208,7 @@ __marimo__/
 Sensor-simulator/test_bacnet_debug.txt
 Sensor-simulator/test_bacnet_failure.txt
 Sensor-simulator/uv.lock
+Sensor-simulator/apdu_dir.txt
+Sensor-simulator/traceback.txt
+Sensor-simulator/output.txt
+Sensor-simulator/output2.txt

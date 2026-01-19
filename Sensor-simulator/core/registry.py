@@ -22,8 +22,11 @@ class SensorRegistry:
             return {k: v.value for k, v in self.sensors.items()}
 
     def by_bacnet_instance(self, instance):
-        # ... logic if needed or removed ...
-        pass
+        mapping = {1: "temperature", 2: "humidity", 3: "pressure"}
+        name = mapping.get(instance)
+        if name:
+            return self.sensors.get(name)
+        return None
 
     def get_sensor(self, name):
          return self.sensors.get(name)

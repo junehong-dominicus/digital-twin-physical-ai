@@ -1,8 +1,0 @@
-Traceback (most recent call last):
-  File "C:\Project\AIoT\GitHub\digital-twin-physical-ai\Sensor-simulator\protocols\modbus_server.py", line 23, in updater
-    store.setValues(4, 0, regs)
-    ~~~~~~~~~~~~~~~^^^^^^^^^^^^
-  File "C:\Users\June\AppData\Roaming\Python\Python313\site-packages\pymodbus\datastore\context.py", line 102, in setValues
-    self.store[self.decode(fc_as_hex)].setValues(address, values)
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AttributeError: 'list' object has no attribute 'setValues'
