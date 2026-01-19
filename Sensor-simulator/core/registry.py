@@ -20,3 +20,10 @@ class SensorRegistry:
     def snapshot(self):
         with self.lock:
             return {k: v.value for k, v in self.sensors.items()}
+
+    def by_bacnet_instance(self, instance):
+        # ... logic if needed or removed ...
+        pass
+
+    def get_sensor(self, name):
+         return self.sensors.get(name)

@@ -22,5 +22,8 @@ threading.Thread(target=run_modbus, args=(registry,), daemon=True).start()
 threading.Thread(target=run_bacnet, args=(registry,), daemon=True).start()
 threading.Thread(target=run_mqtt, args=(registry,), daemon=True).start()
 
+from api.server import run_api
+threading.Thread(target=run_api, args=(registry,), daemon=True).start()
+
 while True:
     time.sleep(10)
