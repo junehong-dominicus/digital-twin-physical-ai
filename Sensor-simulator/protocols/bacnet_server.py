@@ -1,7 +1,9 @@
 from bacpypes.core import run
 from bacpypes.app import BIPSimpleApplication
-from bacpypes.object import AnalogInputObject
+from bacpypes.object import AnalogInputObject, CalendarObject, ScheduleObject
 from bacpypes.local.device import LocalDeviceObject
+from bacpypes.primitivedata import Real, Date, Time, Boolean
+from bacpypes.basetypes import DateRange, DeviceObjectPropertyReference
 import threading
 import time
 
@@ -17,7 +19,7 @@ def run_bacnet(registry):
         vendorIdentifier=15,
     )
 
-    app = BIPSimpleApplication(device, "0.0.0.0/24")
+    app = BIPSimpleApplication(device, "127.0.0.1/24")
 
     ai_temp = AnalogInputObject(
         objectIdentifier=("analogInput", 1),
@@ -40,9 +42,39 @@ def run_bacnet(registry):
         presentValue=0.0,
     )
 
+    # Calendar Object
+    calendar = CalendarObject(
+        objectIdentifier=("calendar", 1),
+        objectName="Holidays",
+        dateList=[]
+    )
+
+    # Schedule Object
+    schedule = ScheduleObject(
+        objectIdentifier=("schedule", 1),
+        objectName="Main Schedule",
+        presentValue=Real(20.0),
+        effectivePeriod=DateRange(
+            startDate=Date(year=2025, month=1, day=1),
+            endDate=Date(year=2025, month=12, day=31)
+        ),
+        weeklySchedule=[],
+        listOfObjectPropertyReferences=[
+            DeviceObjectPropertyReference(
+                objectIdentifier=("analogInput", 1),
+                propertyIdentifier="presentValue",
+                deviceIdentifier=device.objectIdentifier
+            )
+        ],
+        priorityForWriting=16,
+        outOfService=False,
+    )
+
     app.add_object(ai_temp)
     app.add_object(ai_hum)
     app.add_object(ai_pres)
+    app.add_object(calendar)
+    app.add_object(schedule)
 
     def updater():
         while True:
