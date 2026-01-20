@@ -28,7 +28,7 @@ def test_bacnet_priority_workflow():
     )
     
     app = BIPSimpleApplication(local_device, "127.0.0.1:47811")
-    t_addr = Address("127.0.0.1:47808")
+    t_addr = Address("127.0.0.1:47812")
 
     t = threading.Thread(target=run, daemon=True) # daemon to avoid hang if thread doesn't stop
     t.start()

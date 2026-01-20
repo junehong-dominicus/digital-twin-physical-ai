@@ -41,10 +41,10 @@ def test_bacnet_schedule_workflow():
     )
     
     # Bind to a different port to avoid conflict
-    app = BIPSimpleApplication(local_device, "127.0.0.1:47809")
+    app = BIPSimpleApplication(local_device, "127.0.0.1:47811")
 
     # Target Address (local server)
-    t_addr = Address("127.0.0.1:47808")
+    t_addr = Address("127.0.0.1:47812")
 
     # Start the IO loop in a separate thread
     t = threading.Thread(target=run)
