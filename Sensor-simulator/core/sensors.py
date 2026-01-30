@@ -3,7 +3,7 @@ import time
 import math
 
 class Sensor:
-    def __init__(self, name, unit, base, min_v, max_v, noise=0.1, period=1.0, writable=True):
+    def __init__(self, name, unit, base, min_v, max_v, noise=0.1, period=1.0, writable=True, simulation_type="sine"):
         self.name = name
         self.unit = unit
         self.base = base
@@ -16,6 +16,8 @@ class Sensor:
         self.fault = None
         self.writable = writable
         self.priority_array = [None] * 16
+        self.simulation_type = simulation_type
+        self.last_val = base
 
     def set_fault(self, fault_type, value=None):
         self.fault = {"type": fault_type, "value": value}
@@ -61,21 +63,48 @@ class Sensor:
              self.value = active_value
              return self.value
 
-        drift = math.sin(t / 30.0) * (self.max - self.min) * 0.05
+        val = self.base
+
+        if self.simulation_type == "sine":
+            drift = math.sin(t / 30.0) * (self.max - self.min) * 0.05
+            val += drift
+        elif self.simulation_type == "ramp":
+            # Sawtooth pattern over 60 seconds
+            progress = (t % 60.0) / 60.0
+            val = self.min + (self.max - self.min) * progress
+        elif self.simulation_type == "random_walk":
+            # Random walk from last value
+            step = random.uniform(-self.noise, self.noise)
+            # Tendency to return to base if far away
+            if self.last_val > self.base + (self.max - self.min)*0.2:
+                step -= self.noise * 0.5
+            elif self.last_val < self.base - (self.max - self.min)*0.2:
+                step += self.noise * 0.5
+            val = self.last_val + step
+
         noise = random.uniform(-self.noise, self.noise)
         
         # Apply fault: Noise
         if self.fault and self.fault["type"] == "noise":
             extra_noise = float(self.fault.get("value", 1.0))
             noise += random.uniform(-extra_noise, extra_noise)
-            
-        val = self.base + drift + noise
         
+        val += noise
+
         # Apply fault: Offset
         if self.fault and self.fault["type"] == "offset":
             val += float(self.fault.get("value", 0.0))
+
+        # Apply fault: Spike
+        if self.fault and self.fault["type"] == "spike":
+             if random.random() < 0.05:
+                 val += float(self.fault.get("value", (self.max - self.min)*0.5))
             
         self.value = max(self.min, min(self.max, val))
+
+        if self.simulation_type == "random_walk":
+            self.last_val = self.value
+
         return self.value
 
 class BaseSensor:
@@ -85,6 +114,9 @@ class BaseSensor:
         self.value = base
         self.last_update = time.time()
         self.protocols = kwargs.get("protocols", [])
+
+    def update(self):
+        pass
 
 class AnalogSensor(BaseSensor):
     def __init__(self, writable=False, **kw):

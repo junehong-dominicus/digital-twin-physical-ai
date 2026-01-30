@@ -24,7 +24,13 @@ def do_WritePropertyRequest(self, apdu):
                 priority = apdu.priority if apdu.priority else 16
                 
                 # Use the handle_write_property logic but inline for debug
-                sensor = self.registry.by_bacnet_instance(obj_inst)
+                sensor = None
+                if hasattr(self, 'bacnet_lookup') and obj_inst in self.bacnet_lookup:
+                    sensor_name = self.bacnet_lookup[obj_inst]
+                    sensor = self.registry.get_sensor(sensor_name)
+                elif hasattr(self.registry, 'by_bacnet_instance'):
+                    sensor = self.registry.by_bacnet_instance(obj_inst)
+
                 if sensor and obj_type in ("analogValue", "analogInput"):
                     try:
                         value = apdu.propertyValue.cast_out()
@@ -50,7 +56,7 @@ def do_WritePropertyRequest(self, apdu):
 
 Application.do_WritePropertyRequest = do_WritePropertyRequest
 
-def run_bacnet(registry):
+def run_bacnet(registry, port=47808):
     # Specialized logger for BACpypes
     b_logger = logging.getLogger("bacpypes")
     b_logger.setLevel(logging.DEBUG)
@@ -66,88 +72,34 @@ def run_bacnet(registry):
         vendorIdentifier=15,
     )
 
-    app = BIPSimpleApplication(device, "127.0.0.1:47808")
+    app = BIPSimpleApplication(device, f"0.0.0.0:{port}")
     app.registry = registry
+    app.bacnet_lookup = {}
+    app.update_objects = []
 
-    ai_temp = AnalogValueObject(
-        objectIdentifier=("analogValue", 1),
-        objectName="Temperature",
-        units="degreesCelsius",
-        presentValue=0.0,
-        description="Simulated Temperature",
-        priorityArray=[None] * 16,
-        relinquishDefault=0.0,
-    )
-
-    ai_hum = AnalogValueObject(
-        objectIdentifier=("analogValue", 2),
-        objectName="Humidity",
-        units="percent",
-        presentValue=0.0,
-        priorityArray=[None] * 16,
-        relinquishDefault=0.0,
-    )
-
-    ai_pres = AnalogValueObject(
-        objectIdentifier=("analogValue", 3),
-        objectName="Pressure",
-        units="pascals",
-        presentValue=0.0,
-        priorityArray=[None] * 16,
-        relinquishDefault=0.0,
-    )
-
-    # Calendar Object
-    calendar = CalendarObject(
-        objectIdentifier=("calendar", 1),
-        objectName="Holidays",
-        dateList=[]
-    )
-
-    # Schedule Object
-    schedule = ScheduleObject(
-        objectIdentifier=("schedule", 1),
-        objectName="Main Schedule",
-        presentValue=Real(20.0),
-        effectivePeriod=DateRange(
-            startDate=Date(year=2025, month=1, day=1),
-            endDate=Date(year=2025, month=12, day=31)
-        ),
-        weeklySchedule=[],
-        listOfObjectPropertyReferences=[
-            DeviceObjectPropertyReference(
-                objectIdentifier=("analogValue", 1),
-                propertyIdentifier="presentValue",
-                deviceIdentifier=device.objectIdentifier
-            )
-        ],
-        priorityForWriting=16,
-        outOfService=False,
-    )
-
-    app.add_object(ai_temp)
-    app.add_object(ai_hum)
-    app.add_object(ai_pres)
-    app.add_object(calendar)
-    app.add_object(schedule)
+    # Dynamically register sensors
+    sorted_sensors = sorted(registry.sensors.values(), key=lambda s: s.name)
+    
+    for i, sensor in enumerate(sorted_sensors):
+        instance_id = i + 1
+        obj = AnalogValueObject(
+            objectIdentifier=("analogValue", instance_id),
+            objectName=sensor.name,
+            units="noUnits",
+            presentValue=0.0,
+            description=f"Simulated {sensor.name}",
+            priorityArray=[None] * 16,
+            relinquishDefault=0.0,
+        )
+        app.add_object(obj)
+        app.bacnet_lookup[instance_id] = sensor.name
+        app.update_objects.append((obj, sensor))
 
     def updater():
         while True:
-            if registry.get_sensor("temperature"):
-                sensor = registry.get_sensor("temperature")
-                ai_temp.presentValue = Real(sensor.value)
-                ai_temp.priorityArray = sensor.priority_array
-            
-            if registry.get_sensor("humidity"):
-                sensor = registry.get_sensor("humidity")
-                ai_hum.presentValue = Real(sensor.value)
-                ai_hum.priorityArray = sensor.priority_array
-
-            if registry.get_sensor("pressure"):
-                sensor = registry.get_sensor("pressure")
-                ai_pres.presentValue = Real(sensor.value)
-                ai_pres.priorityArray = sensor.priority_array
-                
+            for obj, sensor in app.update_objects:
+                obj.presentValue = Real(sensor.value)
+                obj.priorityArray = sensor.priority_array
             time.sleep(1)
 
     threading.Thread(target=updater, daemon=True).start()

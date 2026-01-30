@@ -1,35 +1,45 @@
-building: HQ
-zone: Floor1
-
 sensors:
   - name: temperature
-    type: analog
-    unit: C
+    unit: "C"
     base: 22.0
     min: -10
     max: 50
-    noise: 0.2
-    update_ms: 1000
-    protocols: [modbus, bacnet, mqtt]
-
+    writable: true
+    simulation_type: sine
   - name: humidity
-    type: analog
     unit: "%"
-    base: 45.0
+    base: 50.0
     min: 0
     max: 100
+    writable: true
+    simulation_type: sine
+  - name: pressure
+    unit: "Pa"
+    base: 101325
+    min: 98000
+    max: 105000
+    writable: true
+    simulation_type: sine
+  - name: co2
+    unit: "ppm"
+    base: 450.0
+    min: 400
+    max: 2000
+    writable: false
+    simulation_type: random_walk
+    noise: 2.0
+  - name: power
+    unit: "kW"
+    base: 12.5
+    min: 0
+    max: 30
+    writable: false
+    simulation_type: sine
     noise: 0.5
-    update_ms: 2000
-    protocols: [modbus, bacnet, mqtt]
-
-  - name: motion
-    type: binary
-    base: 0
-    protocols: [bacnet, mqtt]
-
-  - name: smoke
-    type: binary
-    base: 0
-    protocols: [modbus, bacnet, mqtt]
-    alarm:
-      trigger_probability: 0.01
+  - name: water_level
+    unit: "m"
+    base: 2.0
+    min: 0
+    max: 5
+    writable: true
+    simulation_type: ramp
