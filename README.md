@@ -8,6 +8,7 @@ This project implements a **research-grade Digital Twin for Physical AI systems*
 - Static IoT sensors  
 - Mobile robots  
 - Autonomous drones  
+- Smartglasses (AR & Human-in-the-loop)
 - Spatial 3D perception  
 - LLM-based reasoning and explanation  
 
@@ -55,6 +56,7 @@ New capabilities:
    - IoT sensors (environment, power, vibration)
    - Mobile robots (joints, load, motor health)
    - Autonomous drones (pose, battery, perception)
+   - Smartglasses (head pose, gaze, voice commands)
 
 2. **Perception & Spatial Layer (Phase 2)**
    - SLAM / pose estimation
@@ -92,7 +94,7 @@ Represents:
 - Infrastructure health
 - Spatial zones and history
 
-### Agent Twins (Robots & Drones)
+### Agent Twins (Robots, Drones, & Smartglasses)
 
 Each embodied agent is modeled as an independent **Agent Twin**:
 
@@ -103,7 +105,7 @@ Each embodied agent is modeled as an independent **Agent Twin**:
 - Active mission
 - Perception context
 
-This enables **multi-agent reasoning and coordination**.
+This enables **multi-agent reasoning and coordination**, treating human operators (via Smartglasses) as active agents in the system.
 
 ---
 
@@ -126,6 +128,7 @@ The LLM never consumes images directly — it reasons over **interpretable spati
 - *Why did drone alpha abort its inspection mission?*
 - *Is robot beta safe to continue operation under current load?*
 - *Which agent should inspect the detected structural change?*
+- *What is the operator looking at right now?*
 - *What changed in the environment since yesterday?*
 
 ---
@@ -136,6 +139,7 @@ The LLM never consumes images directly — it reasons over **interpretable spati
 - IoT MCUs and sensors
 - Mobile robots
 - Autonomous drones
+- Smartglasses (e.g., Vuzix, HoloLens, or ESP32-based DIY)
 
 ### Software
 - Python
@@ -213,4 +217,3 @@ Planned directions:
 
 Digital Twin · Physical AI · Robotics · Drones · IoT · Gaussian Splatting ·  
 LangChain · RAG · Multi-Agent Systems · Spatial Intelligence
-

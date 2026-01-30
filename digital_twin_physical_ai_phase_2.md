@@ -11,7 +11,7 @@ Phase 2 evolves the project from a state-centric Digital Twin into a **spatially
 
 The Digital Twin now:
 - Understands **where** things happen (3D space)
-- Models **mobile embodied agents** (robots & drones)
+- Models **mobile embodied agents** (robots, drones, & humans via smartglasses)
 - Integrates **spatial perception** via Gaussian Splatting
 - Supports **interactive visualization and reasoning**
 
@@ -23,7 +23,7 @@ This phase focuses on **embodied intelligence**, not just telemetry.
 
 ### Technical Goals
 - Add spatial awareness to the Digital Twin
-- Support multi-agent coordination (robots + drones)
+- Support multi-agent coordination (robots + drones + smartglasses)
 - Enable interactive 3D visualization
 - Maintain clean separation between perception, state, and cognition
 
@@ -244,4 +244,3 @@ This phase demonstrates:
 - Proper use of LLMs in cyber-physical systems
 
 It positions the project at the intersection of **Digital Twins, Robotics, and Physical AI research**.
-

@@ -16,6 +16,7 @@ that mirrors a real-world system composed of:
 - Static IoT sensors
 - Mobile robots
 - Autonomous drones
+- Smartglasses (Human-in-the-loop)
 
 By combining real-time telemetry with a LangChain-based reasoning agent,
 the Digital Twin evolves from a passive mirror into a **cognitive layer
@@ -33,7 +34,7 @@ They rarely answer:
 - **What should be done next?**
 
 This becomes even harder when the system includes **mobile agents**
-like robots and drones, whose behavior depends on position, mission,
+like robots, drones, and human operators (via smartglasses), whose behavior depends on position, mission,
 energy, and environment.
 
 My goal was to design a Digital Twin that:
@@ -69,6 +70,12 @@ This project deliberately goes further.
   - Battery and flight status
   - Perception metadata
 
+- **Smartglasses**
+  - Head pose & Gaze
+  - Voice commands
+  - AR overlay status
+  - Operator location
+
 Robots and drones are not just sensors —  
 they are **embodied agents capable of action**.
 
@@ -79,7 +86,7 @@ they are **embodied agents capable of action**.
 The system is designed as a layered architecture:
 
 1. **Physical Layer**  
-   Sensors, robots, and drones generate telemetry.
+   Sensors, robots, drones, and smartglasses generate telemetry.
 
 2. **Data Ingestion Layer**  
    MQTT handles real-time data streams.
@@ -111,15 +118,16 @@ The System Twin represents:
 - Infrastructure health
 - Aggregate metrics
 
-### Agent Twins (Robots & Drones)
+### Agent Twins (Robots, Drones, & Smartglasses)
 
-Each robot and drone is modeled as an **Agent Twin** with:
+Each robot, drone, and smartglass unit is modeled as an **Agent Twin** with:
 
 - Position and velocity
 - Battery or power state
 - Health and fault status
 - Active mission
 - Attached sensors
+- Gaze/Focus (for Smartglasses)
 
 This enables **multi-agent physical system modeling**
 and prepares the system for coordination and planning.
