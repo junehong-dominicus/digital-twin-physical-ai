@@ -1,0 +1,73 @@
+settings:
+  num_buildings: 10
+
+templates:
+  - suffix: temperature
+    unit: C
+    min: 18
+    max: 28
+    base: 22.5
+    type: triangle_wave
+    modbus: ir
+    scale: 0.1
+    writable: false
+    noise: 0.5
+    period: 60
+  - suffix: humidity
+    unit: "%"
+    min: 30
+    max: 60
+    base: 48.0
+    type: sawtooth
+    modbus: ir
+    scale: 0.1
+    writable: false
+    noise: 0.5
+    period: 300
+  - suffix: power
+    unit: kW
+    min: 20
+    max: 150
+    base: 55.0
+    type: random_spike
+    modbus: ir
+    scale: 10
+    writable: false
+    spike_chance: 0.05
+    spike_multiplier: 1.8
+  - suffix: co2
+    unit: ppm
+    min: 400
+    max: 1200
+    base: 420.0
+    type: random_walk
+    modbus: ir
+    scale: 1
+    writable: false
+  - suffix: motion
+    unit: bool
+    min: 0
+    max: 1
+    base: 0
+    type: square_wave
+    modbus: di
+    writable: false
+    period: 20
+  - suffix: fire_alarm
+    unit: bool
+    min: 0
+    max: 1
+    base: 0
+    type: random_binary
+    modbus: di
+    writable: false
+  - suffix: thermostat_setpoint
+    unit: C
+    min: 16
+    max: 30
+    base: 22.0
+    type: sine
+    modbus: hr
+    scale: 0.1
+    writable: true
+    noise: 0.5

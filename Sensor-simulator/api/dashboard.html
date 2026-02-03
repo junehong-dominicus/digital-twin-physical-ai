@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sensor Simulator Dashboard</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: #f4f4f9; }
+        h1 { color: #333; }
+        #status { margin-bottom: 20px; font-weight: bold; color: #666; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #007bff; color: white; }
+        tr:hover { background-color: #f1f1f1; }
+        .writable { color: #28a745; font-weight: bold; }
+        input[type="number"] { padding: 5px; border: 1px solid #ccc; border-radius: 4px; width: 80px; }
+        button { padding: 5px 10px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        .type-badge { font-size: 0.85em; padding: 2px 6px; border-radius: 4px; background-color: #e2e6ea; color: #333; }
+        .row-fault { background-color: #ffebee !important; }
+        .row-alarm { background-color: #fff3cd !important; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sensor Simulator Dashboard</h1>
+        <div id="status">Connecting...</div>
+        <div style="margin-bottom: 15px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <input type="text" id="filterName" placeholder="Filter by name (e.g. building_1)" style="padding: 8px; width: 250px; border: 1px solid #ccc; border-radius: 4px;">
+            <select id="filterType" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                <option value="">All Types</option>
+            </select>
+            <div style="border-left: 1px solid #ccc; padding-left: 10px; display: flex; gap: 5px; align-items: center;">
+                <strong>Bulk Set:</strong>
+                <input type="number" id="bulkValue" step="0.1" placeholder="Value" style="padding: 8px; width: 80px; border: 1px solid #ccc; border-radius: 4px;">
+                <button onclick="bulkUpdate()">Apply to Filtered</button>
+            </div>
+        </div>
+        <table id="sensorTable">
+            <thead>
+                <tr>
+                    <th>Sensor Name</th>
+                    <th>Value</th>
+                    <th>Trend</th>
+                    <th>Unit</th>
+                    <th>Type</th>
+                    <th>Protocols</th>
+                    <th>Control</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <script>
+        const statusDiv = document.getElementById('status');
+        const tbody = document.querySelector('#sensorTable tbody');
+        const filterNameInput = document.getElementById('filterName');
+        const filterTypeSelect = document.getElementById('filterType');
+        
+        let allSensors = [];
+        let currentFilteredSensors = [];
+        const sensorHistory = {};
+
+        filterNameInput.addEventListener('input', applyFilters);
+        filterTypeSelect.addEventListener('change', applyFilters);
+
+        async function fetchSensors() {
+            try {
+                const response = await fetch('/sensors');
+                if (!response.ok) throw new Error("Failed to fetch");
+                allSensors = await response.json();
+                
+                // Update history
+                allSensors.forEach(s => {
+                    if (!sensorHistory[s.name]) sensorHistory[s.name] = [];
+                    sensorHistory[s.name].push(typeof s.value === 'boolean' ? (s.value ? 1 : 0) : s.value);
+                    if (sensorHistory[s.name].length > 30) sensorHistory[s.name].shift();
+                });
+                
+                updateTypeOptions();
+                applyFilters();
+                
+                statusDiv.innerText = `Online - ${allSensors.length} sensors active`;
+                statusDiv.style.color = 'green';
+            } catch (e) {
+                statusDiv.innerText = 'Offline - Retrying...';
+                statusDiv.style.color = 'red';
+            }
+        }
+
+        function updateTypeOptions() {
+            const types = new Set(allSensors.map(s => s.type));
+            const currentVal = filterTypeSelect.value;
+            
+            let needsUpdate = false;
+            if (filterTypeSelect.options.length - 1 !== types.size) {
+                needsUpdate = true;
+            } else {
+                for (let i = 1; i < filterTypeSelect.options.length; i++) {
+                    if (!types.has(filterTypeSelect.options[i].value)) {
+                        needsUpdate = true;
+                        break;
+                    }
+                }
+            }
+
+            if (needsUpdate) {
+                filterTypeSelect.innerHTML = '<option value="">All Types</option>';
+                Array.from(types).sort().forEach(t => {
+                    const opt = document.createElement('option');
+                    opt.value = t;
+                    opt.innerText = t;
+                    filterTypeSelect.appendChild(opt);
+                });
+                filterTypeSelect.value = currentVal;
+            }
+        }
+
+        function applyFilters() {
+            const nameFilter = filterNameInput.value.toLowerCase();
+            const typeFilter = filterTypeSelect.value;
+
+            const filtered = allSensors.filter(s => {
+                const matchesName = s.name.toLowerCase().includes(nameFilter);
+                const matchesType = typeFilter === "" || s.type === typeFilter;
+                return matchesName && matchesType;
+            });
+
+            currentFilteredSensors = filtered;
+            renderTable(filtered);
+        }
+
+        function renderTable(sensors) {
+            const visibleNames = new Set(sensors.map(s => s.name));
+
+            // Map existing rows for updates
+            const existingRows = {};
+            tbody.querySelectorAll('tr').forEach(tr => {
+                if (visibleNames.has(tr.dataset.name)) {
+                    tr.style.display = '';
+                    existingRows[tr.dataset.name] = tr;
+                } else {
+                    tr.style.display = 'none';
+                }
+            });
+
+            sensors.forEach(s => {
+                let tr = existingRows[s.name];
+                if (!tr) {
+                    tr = document.createElement('tr');
+                    tr.dataset.name = s.name;
+                    tr.innerHTML = `
+                        <td>${s.name}</td>
+                        <td class="val-cell" style="font-family: monospace; font-weight: bold;"></td>
+                        <td class="spark-cell"></td>
+                        <td>${s.unit || '-'}</td>
+                        <td><span class="type-badge">${s.type}</span></td>
+                        <td class="protocols-cell"></td>
+                        <td class="action-cell"></td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+                
+                // Highlight faults and alarms
+                tr.className = '';
+                if (s.fault) {
+                    tr.classList.add('row-fault');
+                    tr.title = `Fault: ${s.fault.type}`;
+                } else if ((s.name.includes('fire') || s.name.includes('alarm')) && s.value > 0.5) {
+                    tr.classList.add('row-alarm');
+                    tr.title = 'Active Alarm';
+                }
+
+                // Update value
+                const valCell = tr.querySelector('.val-cell');
+                if (s.unit === 'bool') {
+                    valCell.innerText = s.value > 0.5 ? 'TRUE' : 'FALSE';
+                    valCell.style.color = s.value > 0.5 ? 'green' : 'gray';
+                } else {
+                    valCell.innerText = typeof s.value === 'number' ? s.value.toFixed(2) : s.value;
+                    valCell.style.color = 'black';
+                }
+                
+                // Update sparkline
+                tr.querySelector('.spark-cell').innerHTML = generateSparkline(sensorHistory[s.name]);
+                
+                // Update protocols
+                const protoCell = tr.querySelector('.protocols-cell');
+                if (s.protocols && s.protocols.length > 0) {
+                    protoCell.innerHTML = s.protocols.map(p => 
+                        `<span class="type-badge" style="background-color: #d1ecf1; color: #0c5460; margin-right: 4px; display: inline-block; margin-bottom: 2px;">${p}</span>`
+                    ).join('');
+                } else {
+                    protoCell.innerHTML = '<span style="color: #ccc; font-size: 0.8em;">None</span>';
+                }
+
+                // Update controls
+                const actionCell = tr.querySelector('.action-cell');
+                if (s.writable) {
+                    if (!actionCell.hasChildNodes()) {
+                        actionCell.innerHTML = `
+                            <div style="display: flex; gap: 5px;">
+                                <input type="number" id="in-${s.name}" step="0.1" placeholder="Set">
+                                <button onclick="updateSensor('${s.name}')">Set</button>
+                            </div>
+                        `;
+                    }
+                } else {
+                    actionCell.innerText = "";
+                }
+            });
+        }
+
+        function generateSparkline(data) {
+            if (!data || data.length < 2) return '';
+            const width = 100;
+            const height = 30;
+            let min = Math.min(...data);
+            let max = Math.max(...data);
+            
+            if (max === min) { min -= 1; max += 1; }
+            const range = max - min;
+            
+            const points = data.map((val, i) => {
+                const x = (i / (data.length - 1)) * width;
+                const y = height - ((val - min) / range) * height;
+                return `${x},${y}`;
+            });
+            
+            return `<svg width="${width}" height="${height}">
+                <polyline points="${points.join(' ')}" fill="none" stroke="#007bff" stroke-width="1.5" />
+            </svg>`;
+        }
+
+        async function updateSensor(name) {
+            const input = document.getElementById(`in-${name}`);
+            const value = parseFloat(input.value);
+            if (isNaN(value)) {
+                alert("Please enter a valid number");
+                return;
+            }
+            
+            try {
+                await fetch(`/sensors/${name}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({value: value, priority: 8})
+                });
+                input.value = ''; // Clear input on success
+                fetchSensors(); // Refresh immediately
+            } catch (e) {
+                alert("Failed to update sensor");
+            }
+        }
+
+        async function bulkUpdate() {
+            const input = document.getElementById('bulkValue');
+            const value = parseFloat(input.value);
+            if (isNaN(value)) {
+                alert("Please enter a valid number for bulk update");
+                return;
+            }
+
+            const writableSensors = currentFilteredSensors.filter(s => s.writable);
+            if (writableSensors.length === 0) {
+                alert("No writable sensors in current filter.");
+                return;
+            }
+
+            if (!confirm(`Update ${writableSensors.length} sensors to ${value}?`)) return;
+
+            statusDiv.innerText = `Bulk updating ${writableSensors.length} sensors...`;
+            
+            const promises = writableSensors.map(s => 
+                fetch(`/sensors/${s.name}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({value: value, priority: 8})
+                })
+            );
+
+            await Promise.all(promises);
+            input.value = '';
+            fetchSensors();
+        }
+
+        // Poll every 1 second
+        setInterval(fetchSensors, 1000);
+        fetchSensors();
+    </script>
+</body>
+</html>

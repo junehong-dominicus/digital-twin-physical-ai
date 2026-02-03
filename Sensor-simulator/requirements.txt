@@ -1,8 +1,14 @@
-pymodbus==3.6.6
+# For parsing YAML configuration
+pyyaml
+
+# Protocol Libraries
+pymodbus
 bacpypes
 paho-mqtt
-python-dotenv
-PyYAML
+
+# Compatibility for Python 3.12+ (for bacpypes)
+pyasyncore
+
+# API Server
 fastapi
 uvicorn
-httpx

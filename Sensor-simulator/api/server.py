@@ -1,64 +1,141 @@
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from typing import Optional, Literal
+from fastapi.responses import HTMLResponse
+from pydantic import BaseModel, Field
 import uvicorn
-import threading
+import os
+import yaml
 
-app = FastAPI(title="Sensor Simulator API")
-
-# Global registry reference
+app = FastAPI()
 _registry = None
+_protocols_cache = {}
 
-def set_registry(registry):
-    global _registry
-    _registry = registry
+@app.get("/")
+def read_root():
+    count = len(_registry.sensors) if _registry else 0
+    return {"status": "online", "sensor_count": count}
 
-class FaultRequest(BaseModel):
-    type: Literal["freeze", "offset", "noise"]
-    value: Optional[float] = None
-
-@app.get("/sensors")
-def get_sensors():
-    if not _registry:
+@app.get("/sensors/{sensor_name}")
+def read_sensor(sensor_name: str):
+    if _registry is None:
         raise HTTPException(status_code=503, detail="Registry not initialized")
-    return _registry.sensors
-
-@app.get("/sensors/{sensor_id}")
-def get_sensor(sensor_id: str):
-    if not _registry:
-        raise HTTPException(status_code=503, detail="Registry not initialized")
-    sensor = _registry.get_sensor(sensor_id)
+    
+    sensor = _registry.get_sensor(sensor_name)
     if not sensor:
         raise HTTPException(status_code=404, detail="Sensor not found")
+    
     return {
-        "id": sensor.name, 
-        "value": sensor.value, 
-        "unit": sensor.unit,
-        "fault": sensor.fault
+        "name": sensor.name,
+        "value": sensor.value,
+        "unit": sensor.unit
     }
 
-@app.post("/sensors/{sensor_id}/fault")
-def inject_fault(sensor_id: str, fault: FaultRequest):
-    if not _registry:
+def load_protocols():
+    global _protocols_cache
+    _protocols_cache.clear()
+    
+    # Modbus
+    if os.path.exists("config/modbus_map.yaml"):
+        try:
+            with open("config/modbus_map.yaml", "r") as f:
+                modbus = yaml.safe_load(f) or {}
+                for section_name, section in modbus.items():
+                    if isinstance(section, dict):
+                        for addr, item in section.items():
+                            name = item.get("sensor")
+                            if name:
+                                protos = _protocols_cache.setdefault(name, [])
+                                type_map = {
+                                    "holding_registers": "HR",
+                                    "input_registers": "IR",
+                                    "discrete_inputs": "DI",
+                                    "coils": "CO"
+                                }
+                                prefix = type_map.get(section_name, section_name)
+                                label = f"Modbus {prefix}:{addr}"
+                                if label not in protos:
+                                    protos.append(label)
+        except Exception as e:
+            print(f"Error loading modbus map: {e}")
+
+    # BACnet
+    if os.path.exists("config/bacnet_map.yaml"):
+        try:
+            with open("config/bacnet_map.yaml", "r") as f:
+                bacnet = yaml.safe_load(f) or {}
+                for obj_type, objects in bacnet.items():
+                    if isinstance(objects, dict):
+                        for instance, data in objects.items():
+                            name = data.get("sensor")
+                            if name:
+                                protos = _protocols_cache.setdefault(name, [])
+                                type_map = {
+                                    "analogValue": "AV",
+                                    "binaryValue": "BV",
+                                    "analogInput": "AI",
+                                    "binaryInput": "BI",
+                                    "multiStateValue": "MSV"
+                                }
+                                prefix = type_map.get(obj_type, obj_type)
+                                label = f"BACnet {prefix}:{instance}"
+                                if label not in protos:
+                                    protos.append(label)
+        except Exception as e:
+            print(f"Error loading bacnet map: {e}")
+
+@app.get("/sensors")
+def list_sensors():
+    if _registry is None:
+        return []
+    
+    if not _protocols_cache:
+        load_protocols()
+
+    sensors_list = []
+    # Iterate over a copy of values to avoid runtime error if dict changes size
+    for s in list(_registry.sensors.values()):
+        sensors_list.append({
+            "name": s.name,
+            "value": s.value,
+            "unit": s.unit,
+            "writable": s.writable,
+            "type": getattr(s, "simulation_type", "unknown"),
+            "protocols": _protocols_cache.get(s.name, []),
+            "fault": s.fault
+        })
+    return sorted(sensors_list, key=lambda x: x["name"])
+
+@app.get("/dashboard", response_class=HTMLResponse)
+def dashboard():
+    html_path = os.path.join(os.path.dirname(__file__), "dashboard.html")
+    if os.path.exists(html_path):
+        with open(html_path, "r") as f:
+            return f.read()
+    return "Dashboard file not found."
+
+class SensorUpdate(BaseModel):
+    value: float
+    priority: int = Field(16, ge=1, le=16)
+
+@app.post("/sensors/{sensor_name}")
+def update_sensor(sensor_name: str, update: SensorUpdate):
+    if _registry is None:
         raise HTTPException(status_code=503, detail="Registry not initialized")
-    sensor = _registry.get_sensor(sensor_id)
+    
+    sensor = _registry.get_sensor(sensor_name)
     if not sensor:
         raise HTTPException(status_code=404, detail="Sensor not found")
     
-    sensor.set_fault(fault.type, fault.value)
-    return {"status": "fault injected", "sensor": sensor_id, "fault": sensor.fault}
-
-@app.delete("/sensors/{sensor_id}/fault")
-def clear_fault(sensor_id: str):
-    if not _registry:
-        raise HTTPException(status_code=503, detail="Registry not initialized")
-    sensor = _registry.get_sensor(sensor_id)
-    if not sensor:
-        raise HTTPException(status_code=404, detail="Sensor not found")
+    if not sensor.writable:
+        raise HTTPException(status_code=400, detail="Sensor is not writable")
     
-    sensor.clear_fault()
-    return {"status": "fault cleared", "sensor": sensor_id}
+    sensor.set_priority(update.value, update.priority)
+    return {"status": "success", "name": sensor.name, "message": "Setpoint updated"}
 
-def run_api(registry, host="0.0.0.0", port=8000):
-    set_registry(registry)
-    uvicorn.run(app, host=host, port=port, log_level="info")
+def run_api(registry):
+    global _registry
+    _registry = registry
+    # Configure uvicorn to run in a thread without signal handlers
+    config = uvicorn.Config(app, host="0.0.0.0", port=8000, log_level="info")
+    server = uvicorn.Server(config)
+    server.install_signal_handlers = lambda: None
+    server.run()

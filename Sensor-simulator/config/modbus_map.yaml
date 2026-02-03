@@ -1,10 +1,203 @@
 holding_registers:
   40001:
-    sensor: temperature
+    sensor: building_1_thermostat_setpoint
     scale: 0.1
     writable: true
-
   40002:
-    sensor: humidity
+    sensor: building_2_thermostat_setpoint
     scale: 0.1
     writable: true
+  40003:
+    sensor: building_3_thermostat_setpoint
+    scale: 0.1
+    writable: true
+  40004:
+    sensor: building_4_thermostat_setpoint
+    scale: 0.1
+    writable: true
+  40005:
+    sensor: building_5_thermostat_setpoint
+    scale: 0.1
+    writable: true
+  40006:
+    sensor: building_6_thermostat_setpoint
+    scale: 0.1
+    writable: true
+  40007:
+    sensor: building_7_thermostat_setpoint
+    scale: 0.1
+    writable: true
+  40008:
+    sensor: building_8_thermostat_setpoint
+    scale: 0.1
+    writable: true
+  40009:
+    sensor: building_9_thermostat_setpoint
+    scale: 0.1
+    writable: true
+  40010:
+    sensor: building_10_thermostat_setpoint
+    scale: 0.1
+    writable: true
+input_registers:
+  30001:
+    sensor: building_1_temperature
+    scale: 0.1
+  30002:
+    sensor: building_1_humidity
+    scale: 0.1
+  30003:
+    sensor: building_1_power
+    scale: 10
+  30004:
+    sensor: building_1_co2
+    scale: 1
+  30005:
+    sensor: building_2_temperature
+    scale: 0.1
+  30006:
+    sensor: building_2_humidity
+    scale: 0.1
+  30007:
+    sensor: building_2_power
+    scale: 10
+  30008:
+    sensor: building_2_co2
+    scale: 1
+  30009:
+    sensor: building_3_temperature
+    scale: 0.1
+  30010:
+    sensor: building_3_humidity
+    scale: 0.1
+  30011:
+    sensor: building_3_power
+    scale: 10
+  30012:
+    sensor: building_3_co2
+    scale: 1
+  30013:
+    sensor: building_4_temperature
+    scale: 0.1
+  30014:
+    sensor: building_4_humidity
+    scale: 0.1
+  30015:
+    sensor: building_4_power
+    scale: 10
+  30016:
+    sensor: building_4_co2
+    scale: 1
+  30017:
+    sensor: building_5_temperature
+    scale: 0.1
+  30018:
+    sensor: building_5_humidity
+    scale: 0.1
+  30019:
+    sensor: building_5_power
+    scale: 10
+  30020:
+    sensor: building_5_co2
+    scale: 1
+  30021:
+    sensor: building_6_temperature
+    scale: 0.1
+  30022:
+    sensor: building_6_humidity
+    scale: 0.1
+  30023:
+    sensor: building_6_power
+    scale: 10
+  30024:
+    sensor: building_6_co2
+    scale: 1
+  30025:
+    sensor: building_7_temperature
+    scale: 0.1
+  30026:
+    sensor: building_7_humidity
+    scale: 0.1
+  30027:
+    sensor: building_7_power
+    scale: 10
+  30028:
+    sensor: building_7_co2
+    scale: 1
+  30029:
+    sensor: building_8_temperature
+    scale: 0.1
+  30030:
+    sensor: building_8_humidity
+    scale: 0.1
+  30031:
+    sensor: building_8_power
+    scale: 10
+  30032:
+    sensor: building_8_co2
+    scale: 1
+  30033:
+    sensor: building_9_temperature
+    scale: 0.1
+  30034:
+    sensor: building_9_humidity
+    scale: 0.1
+  30035:
+    sensor: building_9_power
+    scale: 10
+  30036:
+    sensor: building_9_co2
+    scale: 1
+  30037:
+    sensor: building_10_temperature
+    scale: 0.1
+  30038:
+    sensor: building_10_humidity
+    scale: 0.1
+  30039:
+    sensor: building_10_power
+    scale: 10
+  30040:
+    sensor: building_10_co2
+    scale: 1
+discrete_inputs:
+  10001:
+    sensor: building_1_motion
+  10002:
+    sensor: building_1_fire_alarm
+  10003:
+    sensor: building_2_motion
+  10004:
+    sensor: building_2_fire_alarm
+  10005:
+    sensor: building_3_motion
+  10006:
+    sensor: building_3_fire_alarm
+  10007:
+    sensor: building_4_motion
+  10008:
+    sensor: building_4_fire_alarm
+  10009:
+    sensor: building_5_motion
+  10010:
+    sensor: building_5_fire_alarm
+  10011:
+    sensor: building_6_motion
+  10012:
+    sensor: building_6_fire_alarm
+  10013:
+    sensor: building_7_motion
+  10014:
+    sensor: building_7_fire_alarm
+  10015:
+    sensor: building_8_motion
+  10016:
+    sensor: building_8_fire_alarm
+  10017:
+    sensor: building_9_motion
+  10018:
+    sensor: building_9_fire_alarm
+  10019:
+    sensor: building_10_motion
+  10020:
+    sensor: building_10_fire_alarm

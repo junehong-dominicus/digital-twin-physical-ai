@@ -1,0 +1,142 @@
+analogValue:
+  1:
+    sensor: building_1_temperature
+  2:
+    sensor: building_1_humidity
+  3:
+    sensor: building_1_power
+  4:
+    sensor: building_1_co2
+  5:
+    sensor: building_1_thermostat_setpoint
+  6:
+    sensor: building_2_temperature
+  7:
+    sensor: building_2_humidity
+  8:
+    sensor: building_2_power
+  9:
+    sensor: building_2_co2
+  10:
+    sensor: building_2_thermostat_setpoint
+  11:
+    sensor: building_3_temperature
+  12:
+    sensor: building_3_humidity
+  13:
+    sensor: building_3_power
+  14:
+    sensor: building_3_co2
+  15:
+    sensor: building_3_thermostat_setpoint
+  16:
+    sensor: building_4_temperature
+  17:
+    sensor: building_4_humidity
+  18:
+    sensor: building_4_power
+  19:
+    sensor: building_4_co2
+  20:
+    sensor: building_4_thermostat_setpoint
+  21:
+    sensor: building_5_temperature
+  22:
+    sensor: building_5_humidity
+  23:
+    sensor: building_5_power
+  24:
+    sensor: building_5_co2
+  25:
+    sensor: building_5_thermostat_setpoint
+  26:
+    sensor: building_6_temperature
+  27:
+    sensor: building_6_humidity
+  28:
+    sensor: building_6_power
+  29:
+    sensor: building_6_co2
+  30:
+    sensor: building_6_thermostat_setpoint
+  31:
+    sensor: building_7_temperature
+  32:
+    sensor: building_7_humidity
+  33:
+    sensor: building_7_power
+  34:
+    sensor: building_7_co2
+  35:
+    sensor: building_7_thermostat_setpoint
+  36:
+    sensor: building_8_temperature
+  37:
+    sensor: building_8_humidity
+  38:
+    sensor: building_8_power
+  39:
+    sensor: building_8_co2
+  40:
+    sensor: building_8_thermostat_setpoint
+  41:
+    sensor: building_9_temperature
+  42:
+    sensor: building_9_humidity
+  43:
+    sensor: building_9_power
+  44:
+    sensor: building_9_co2
+  45:
+    sensor: building_9_thermostat_setpoint
+  46:
+    sensor: building_10_temperature
+  47:
+    sensor: building_10_humidity
+  48:
+    sensor: building_10_power
+  49:
+    sensor: building_10_co2
+  50:
+    sensor: building_10_thermostat_setpoint
+binaryValue:
+  1:
+    sensor: building_1_motion
+  2:
+    sensor: building_1_fire_alarm
+  3:
+    sensor: building_2_motion
+  4:
+    sensor: building_2_fire_alarm
+  5:
+    sensor: building_3_motion
+  6:
+    sensor: building_3_fire_alarm
+  7:
+    sensor: building_4_motion
+  8:
+    sensor: building_4_fire_alarm
+  9:
+    sensor: building_5_motion
+  10:
+    sensor: building_5_fire_alarm
+  11:
+    sensor: building_6_motion
+  12:
+    sensor: building_6_fire_alarm
+  13:
+    sensor: building_7_motion
+  14:
+    sensor: building_7_fire_alarm
+  15:
+    sensor: building_8_motion
+  16:
+    sensor: building_8_fire_alarm
+  17:
+    sensor: building_9_motion
+  18:
+    sensor: building_9_fire_alarm
+  19:
+    sensor: building_10_motion
+  20:
+    sensor: building_10_fire_alarm

@@ -3,12 +3,12 @@ import time
 import math
 
 class Sensor:
-    def __init__(self, name, unit, base, min_v, max_v, noise=0.1, period=1.0, writable=True, simulation_type="sine"):
+    def __init__(self, name, unit, base, min, max, noise=0.1, period=1.0, writable=True, simulation_type="sine", **kwargs):
         self.name = name
         self.unit = unit
         self.base = base
-        self.min = min_v
-        self.max = max_v
+        self.min = min
+        self.max = max
         self.noise = noise
         self.period = period
         self.value = base
@@ -18,6 +18,11 @@ class Sensor:
         self.priority_array = [None] * 16
         self.simulation_type = simulation_type
         self.last_val = base
+
+        # Capture extra args from config for specific simulation types
+        self.spike_chance = kwargs.get("spike_chance", 0.05)
+        self.spike_multiplier = kwargs.get("spike_multiplier", 1.5)
+        self.pulse_width = kwargs.get("pulse_width", 1.0)
 
     def set_fault(self, fault_type, value=None):
         self.fault = {"type": fault_type, "value": value}
@@ -81,6 +86,50 @@ class Sensor:
             elif self.last_val < self.base - (self.max - self.min)*0.2:
                 step += self.noise * 0.5
             val = self.last_val + step
+        elif self.simulation_type == "random_spike":
+            # A base value that has some sine wave variation
+            drift = math.sin(t / 60.0) * (self.max - self.min) * 0.1
+            val += drift
+            if random.random() < self.spike_chance:
+                val *= self.spike_multiplier
+        elif self.simulation_type == "random_binary":
+            if random.random() < self.spike_chance:
+                val = self.max
+            else:
+                val = self.min
+            self.value = val
+            return self.value
+        elif self.simulation_type == "step":
+            if int(t / 10.0) % 2 == 0:
+                val = self.min
+            else:
+                val = self.max
+            self.value = val
+            return self.value
+        elif self.simulation_type == "sawtooth":
+            progress = (t % self.period) / self.period
+            val = self.min + (self.max - self.min) * progress
+        elif self.simulation_type == "square_wave":
+            if (t % self.period) < (self.period / 2):
+                val = self.max
+            else:
+                val = self.min
+            self.value = val
+            return self.value
+        elif self.simulation_type == "triangle_wave":
+            phase = t % self.period
+            half_p = self.period / 2
+            if phase < half_p:
+                val = self.min + (self.max - self.min) * (phase / half_p)
+            else:
+                val = self.max - (self.max - self.min) * ((phase - half_p) / half_p)
+        elif self.simulation_type == "pulse":
+            if (t % self.period) < self.pulse_width:
+                val = self.max
+            else:
+                val = self.min
+            self.value = val
+            return self.value
 
         noise = random.uniform(-self.noise, self.noise)
         

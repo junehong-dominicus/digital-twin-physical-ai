@@ -4,6 +4,7 @@ import os
 import logging
 from dotenv import load_dotenv
 import yaml
+import warnings
 
 load_dotenv()
 
@@ -14,7 +15,14 @@ from protocols.bacnet_server import run_bacnet
 from protocols.mqtt_client import run_mqtt, set_mqtt_enabled
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+
+# Suppress bacpypes thread warning
+warnings.filterwarnings("ignore", message="no signal handlers for child threads")
+
+# Reduce noise from protocol libraries
+logging.getLogger("pymodbus").setLevel(logging.WARNING)
+logging.getLogger("bacpypes").setLevel(logging.WARNING)
 
 try:
     registry = SensorRegistry()
@@ -24,18 +32,10 @@ try:
         with open(config_path, "r") as f:
             config = yaml.safe_load(f)
             for s in config.get("sensors", []):
-                registry.add(Sensor(
-                    name=s["name"],
-                    unit=s.get("unit", ""),
-                    base=s.get("base", 0.0),
-                    min_v=s.get("min", 0.0),
-                    max_v=s.get("max", 100.0),
-                    noise=s.get("noise", 0.1),
-                    period=s.get("period", 1.0),
-                    writable=s.get("writable", True),
-                    simulation_type=s.get("simulation_type", "sine")
-                ))
-        logging.info(f"Loaded sensors from {config_path}")
+                registry.add(Sensor(**s))
+        logging.info(f"Loaded {len(registry.sensors)} sensors from {config_path}")
+        if len(registry.sensors) < 10:
+            logging.debug(f"Loaded sensor names: {list(registry.sensors.keys())}")
     else:
         logging.info("Config file not found, using default sensors")
         registry.add(Sensor("temperature", "C", 22.0, -10, 50, writable=True))
@@ -47,8 +47,20 @@ except Exception as e:
     raise
 
 def sensor_loop():
+    # Track previous values to log changes only
+    prev_values = {}
     while True:
         registry.update_all()
+        
+        # Verification: Log specific binary sensors when they change
+        for name in ["building_1_motion", "building_1_fire_alarm"]:
+            sensor = registry.get_sensor(name)
+            if sensor:
+                val = sensor.value
+                if prev_values.get(name) != val:
+                    logging.info(f"[VERIFY] {name} toggled to {val}")
+                    prev_values[name] = val
+
         time.sleep(1)
 
 threading.Thread(target=sensor_loop, daemon=True).start()
