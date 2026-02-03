@@ -1,9 +1,10 @@
 # Data Flow
 
-1. **Sensors (IoT MCUs)** -> MQTT Broker (Topic: `sensors/telemetry`)
-2. **MQTT Listener** -> Ingests data -> Updates **Twin State**
-3. **Twin State** -> Runs **Rules** & **Anomaly Detection**
-4. **Twin State** -> Persisted to **InfluxDB**
-5. **User Query** -> **LangChain Agent**
-6. **LangChain Agent** -> Retrieves **Twin State** + **Vector DB (RAG)**
-7. **LangChain Agent** -> Returns Answer
+1. **Sensors (IoT MCUs)** -> MQTT Broker
+2. **CCTV Cameras** -> **Perception Layer** -> **Structured JSON Events**
+3. **MQTT Listener** -> Ingests Telemetry & Events -> Updates **Twin State**
+4. **Twin State** -> Runs **Rules** & **Anomaly Detection**
+5. **Twin State** -> Persisted to **InfluxDB**
+6. **User Query** -> **LangChain Agent**
+7. **LangChain Agent** -> Retrieves **Twin State** + **Vector DB (RAG)**
+8. **LangChain Agent** -> Returns Answer

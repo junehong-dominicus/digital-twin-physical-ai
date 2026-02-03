@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+sqlalchemy
+pydantic
+requests
+python-dotenv
+langchain-openai
+langchain-core
+paho-mqtt

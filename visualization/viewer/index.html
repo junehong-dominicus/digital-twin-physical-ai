@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Twin Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Physical AI Digital Twin</h1>
+        <div id="status-indicator" class="status-online">System Online</div>
+    </header>
+
+    <main>
+        <section id="sensors-section">
+            <h2>Environment Sensors</h2>
+            <div id="sensors-container" class="grid-container">
+                <p class="loading">Loading sensors...</p>
+            </div>
+        </section>
+
+        <section id="agents-section">
+            <h2>Registered Agents</h2>
+            <div id="agents-container" class="grid-container">
+                <!-- Agents injected here -->
+                <p class="loading">Loading agents...</p>
+            </div>
+        </section>
+
+        <section id="analytics-section">
+            <h2>System Analytics</h2>
+            <div class="chart-container">
+                <canvas id="events-chart"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="sensors-chart"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="health-chart"></canvas>
+            </div>
+        </section>
+
+        <section id="events-section">
+            <div class="section-header">
+                <h2>Spatial Event History</h2>
+                <div class="controls">
+                    <select id="zone-filter"><option value="">All Zones</option></select>
+                    <button id="refresh-btn">Refresh Events</button>
+                </div>
+            </div>
+            <table id="events-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Type</th>
+                        <th>Source</th>
+                        <th>Zone</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Events injected here -->
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -67,7 +67,7 @@ This layer is responsible for reconstructing and updating a **3D representation 
 - Gaussian Splatting (graphdeco-inria)
 
 **Inputs**:
-- RGB images from drones / robots
+- RGB images from drones, robots, and fixed CCTV cameras
 - Camera intrinsics
 - Pose estimates (SLAM, GPS, VIO)
 
@@ -88,13 +88,28 @@ Responsibilities:
 - Convert spatial changes into **structured events**
 
 Example event:
+This event is generated when a fixed CCTV camera detects an object (e.g., a person)
+in a restricted zone. It includes both 2D bounding box data and an estimated 3D
+position, making it spatially actionable for the Digital Twin.
+
 ```json
 {
-  "zone": "Inspection_A",
-  "change_detected": true,
-  "confidence": 0.91,
-  "observed_by": "drone_alpha",
-  "timestamp": "2026-01-16T10:12:00Z"
+  "event_id": "evt_17f8aa7c",
+  "event_type": "object_detection",
+  "source_type": "cctv",
+  "source_id": "cctv_cam_04_north_perimeter",
+  "timestamp": "2026-01-16T10:12:05Z",
+  "zone": "Perimeter_North_Restricted",
+  "detection": {
+    "class": "person",
+    "confidence": 0.96,
+    "bounding_box_2d": [512, 288, 580, 480],
+    "estimated_position_3d": {
+      "x": 15.7,
+      "y": 88.2,
+      "z": 1.5
+    }
+  }
 }
 ```
 
@@ -199,6 +214,8 @@ digital-twin-physical-ai/
 │   ├── gaussian_splatting/
 │   ├── pose_sync/
 │   └── events/
+│       ├── README.md
+│       └── cctv_object_detected.json
 │
 ├── visualization/
 │   ├── viewer/

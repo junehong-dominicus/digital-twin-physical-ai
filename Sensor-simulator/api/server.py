@@ -135,7 +135,8 @@ def run_api(registry):
     global _registry
     _registry = registry
     # Configure uvicorn to run in a thread without signal handlers
-    config = uvicorn.Config(app, host="0.0.0.0", port=8000, log_level="info")
+    port = int(os.getenv("SIM_PORT", 8080)) # Use a different default to avoid conflict
+    config = uvicorn.Config(app, host="0.0.0.0", port=port, log_level="info")
     server = uvicorn.Server(config)
     server.install_signal_handlers = lambda: None
     server.run()

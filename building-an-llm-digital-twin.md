@@ -14,6 +14,7 @@ In this project, I built an **LLM-powered, multi-agent Digital Twin**
 that mirrors a real-world system composed of:
 
 - Static IoT sensors
+- CCTV cameras
 - Mobile robots
 - Autonomous drones
 - Smartglasses (Human-in-the-loop)
@@ -58,6 +59,11 @@ This project deliberately goes further.
   - Power usage
   - Environmental conditions
 
+- **CCTV Cameras**
+  - Live video feeds
+  - Fixed positions and known intrinsics
+  - Scene monitoring for spatial perception
+
 - **Mobile Robots**
   - Joint states
   - Load and torque
@@ -86,7 +92,7 @@ they are **embodied agents capable of action**.
 The system is designed as a layered architecture:
 
 1. **Physical Layer**  
-   Sensors, robots, drones, and smartglasses generate telemetry.
+   Sensors, cameras, robots, drones, and smartglasses generate telemetry.
 
 2. **Data Ingestion Layer**  
    MQTT handles real-time data streams.

@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "digital-twin-physical-ai"
+version = "0.1.0"
+description = "LLM-Powered Digital Twin for Physical AI"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [
+    {name = "Your Name", email = "your.email@example.com"}
+]
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "sqlalchemy",
+    "pydantic",
+    "requests",
+    "python-dotenv",
+    "langchain-openai",
+    "langchain-core",
+    "paho-mqtt",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+exclude = ["architecture", "monitoring", "docs", "blog", "visualization"]

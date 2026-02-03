@@ -6,6 +6,7 @@
 This project implements a **research-grade Digital Twin for Physical AI systems** that integrates:
 
 - Static IoT sensors  
+- CCTV cameras
 - Mobile robots  
 - Autonomous drones  
 - Smartglasses (AR & Human-in-the-loop)
@@ -55,6 +56,7 @@ New capabilities:
 1. **Physical Layer**
    - IoT sensors (environment, power, vibration)
    - Mobile robots (joints, load, motor health)
+   - CCTV cameras (live video feeds)
    - Autonomous drones (pose, battery, perception)
    - Smartglasses (head pose, gaze, voice commands)
 
@@ -158,6 +160,56 @@ The LLM never consumes images directly — it reasons over **interpretable spati
 
 ---
 
+## Getting Started
+
+### Prerequisites
+- Python 3.10+
+- An MQTT Broker (e.g., Mosquitto) running on `localhost:1883`.
+- An OpenAI API Key.
+
+### Installation
+
+1.  **Clone the repository and navigate into it.**
+
+2.  **Create a virtual environment and install dependencies:**
+    ```bash
+    # Create and activate the virtual environment
+    python -m venv .venv
+    source .venv/bin/activate  # On Windows use: .venv\Scripts\activate
+
+    # Install dependencies
+    pip install -r requirements.txt
+    ```
+
+3.  **Set up environment variables:**
+    Create a `.env` file in the root directory and add your OpenAI API key:
+    ```
+    OPENAI_API_KEY="your-api-key-here"
+    ```
+
+### Running the System
+
+1.  **Initialize the Database:**
+    This command creates the `digital_twin.db` file and seeds it with initial data. Run this once.
+    ```bash
+    python init_db.py
+    ```
+
+2.  **Run the Main Server:**
+    This starts the FastAPI backend and the web dashboard.
+    ```bash
+    python run_server.py
+    ```
+    The API will be available at `http://localhost:8001` and the dashboard at `http://localhost:8001/dashboard/`.
+
+3.  **Start the Sensor Simulation:**
+    To generate live data for the dashboard charts, run the mock sensor stream in a separate terminal:
+    ```bash
+    python backend/agents/mock_sensor_stream.py
+    ```
+
+---
+
 ## Repository Structure
 ```
 digital-twin-physical-ai/
@@ -167,9 +219,12 @@ digital-twin-physical-ai/
 │ └── cognition/ # LLM reasoning layer
 │
 ├── spatial/
-│ ├── gaussian_splatting/
-│ ├── pose_sync/
-│ └── events/
+│   ├── gaussian_splatting/
+│   ├── pose_sync/
+│   └── events/
+│       ├── models.py
+│       ├── README.md
+│       └── cctv_object_detected.json
 │
 ├── visualization/
 │ ├── viewer/
