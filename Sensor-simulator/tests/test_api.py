@@ -18,13 +18,13 @@ def test_list_sensors(api_context):
     response = client.get("/sensors")
     assert response.status_code == 200
     data = response.json()
-    assert "temp" in data
+    assert any(s["name"] == "temp" for s in data)
 
 def test_get_sensor_details(api_context):
     client, _ = api_context
     response = client.get("/sensors/temp")
     assert response.status_code == 200
-    assert response.json()["id"] == "temp"
+    assert response.json()["name"] == "temp"
 
 def test_fault_injection_freeze(api_context):
     client, registry = api_context

@@ -7,3 +7,9 @@ python-dotenv
 langchain-openai
 langchain-core
 paho-mqtt
+httpx
+pytest
+bacpypes
+pymodbus>=3.0.0
+PyYAML
+pyasyncore

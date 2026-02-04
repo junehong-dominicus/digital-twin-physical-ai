@@ -26,7 +26,8 @@ def read_sensor(sensor_name: str):
     return {
         "name": sensor.name,
         "value": sensor.value,
-        "unit": sensor.unit
+        "unit": sensor.unit,
+        "fault": sensor.fault
     }
 
 def load_protocols():
@@ -112,6 +113,34 @@ def dashboard():
             return f.read()
     return "Dashboard file not found."
 
+class FaultInjection(BaseModel):
+    type: str
+    value: float
+
+@app.post("/sensors/{sensor_name}/fault")
+def inject_fault(sensor_name: str, fault: FaultInjection):
+    if _registry is None:
+        raise HTTPException(status_code=503, detail="Registry not initialized")
+    
+    sensor = _registry.get_sensor(sensor_name)
+    if not sensor:
+        raise HTTPException(status_code=404, detail="Sensor not found")
+    
+    sensor.fault = {"type": fault.type, "value": fault.value}
+    return {"status": "success", "name": sensor.name, "message": f"Fault {fault.type} injected"}
+
+@app.delete("/sensors/{sensor_name}/fault")
+def clear_fault(sensor_name: str):
+    if _registry is None:
+        raise HTTPException(status_code=503, detail="Registry not initialized")
+    
+    sensor = _registry.get_sensor(sensor_name)
+    if not sensor:
+        raise HTTPException(status_code=404, detail="Sensor not found")
+    
+    sensor.fault = None
+    return {"status": "success", "name": sensor.name, "message": "Fault cleared"}
+
 class SensorUpdate(BaseModel):
     value: float
     priority: int = Field(16, ge=1, le=16)
@@ -130,6 +159,10 @@ def update_sensor(sensor_name: str, update: SensorUpdate):
     
     sensor.set_priority(update.value, update.priority)
     return {"status": "success", "name": sensor.name, "message": "Setpoint updated"}
+
+def set_registry(registry):
+    global _registry
+    _registry = registry
 
 def run_api(registry):
     global _registry

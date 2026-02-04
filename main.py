@@ -11,7 +11,7 @@ from sqlalchemy.orm import sessionmaker, Session
 
 # Import the ORM model from the initialization script
 # (Assumes init_db.py is in the same directory)
-from init_db import SpatialEvent, Agent, Zone, SystemHealthHistory
+from init_db import SpatialEvent, Agent, Zone, SystemHealthHistory, Base
 
 app = FastAPI(title="LLM Digital Twin API")
 
@@ -20,6 +20,10 @@ DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///digital_twin.db")
 
 # Create engine and session factory
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URL else {})
+
+# Ensure all tables exist (creates system_health_history if missing)
+Base.metadata.create_all(bind=engine)
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Dependency to get DB session

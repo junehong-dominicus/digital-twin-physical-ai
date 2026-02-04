@@ -7,7 +7,7 @@ def run():
 
     start = time.time()
     for _ in range(10000):
-        client.read_input_registers(0, 10)
+        client.read_input_registers(0, count=10)
 
     elapsed = time.time() - start
     rps = 10000 / elapsed

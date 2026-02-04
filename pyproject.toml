@@ -27,3 +27,11 @@ dependencies = [
 [tool.setuptools.packages.find]
 where = ["."]
 exclude = ["architecture", "monitoring", "docs", "blog", "visualization"]
+
+[tool.pytest.ini_options]
+pythonpath = [".", "Sensor-simulator"]
+testpaths = ["tests", "Sensor-simulator/tests"]
+filterwarnings = [
+    "ignore:local address at the application layer deprecated:DeprecationWarning",
+    "ignore:no signal handlers for child threads:UserWarning",
+]
