@@ -6,6 +6,8 @@ requests
 python-dotenv
 langchain-openai
 langchain-core
+langchain
+langchain-community
 paho-mqtt
 httpx
 pytest
@@ -13,3 +15,5 @@ bacpypes
 pymodbus>=3.0.0
 PyYAML
 pyasyncore
+asyncua
+cpppo

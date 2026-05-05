@@ -12,6 +12,8 @@ from core.sensors import Sensor
 from core.registry import SensorRegistry
 from protocols.modbus_server import run_modbus
 from protocols.bacnet_server import run_bacnet
+from protocols.opcua_server import start_opcua
+from protocols.enip_server import start_enip
 from protocols.mqtt_client import run_mqtt, set_mqtt_enabled
 
 # Configure logging
@@ -27,7 +29,9 @@ logging.getLogger("bacpypes").setLevel(logging.WARNING)
 try:
     registry = SensorRegistry()
 
-    config_path = "config/sensors.yaml"
+    # Get base directory of the script
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    config_path = os.path.join(base_dir, "config", "sensors.yaml")
     if os.path.exists(config_path):
         with open(config_path, "r") as f:
             config = yaml.safe_load(f)
@@ -68,6 +72,12 @@ modbus_port = int(os.getenv("MODBUS_PORT", 5020))
 threading.Thread(target=run_modbus, args=(registry, modbus_port), daemon=True).start()
 bacnet_port = int(os.getenv("BACNET_PORT", 47808))
 threading.Thread(target=run_bacnet, args=(registry, bacnet_port), daemon=True).start()
+
+opcua_port = int(os.getenv("OPCUA_PORT", 4840))
+threading.Thread(target=start_opcua, args=(registry, opcua_port), daemon=True).start()
+
+enip_port = int(os.getenv("ENIP_PORT", 44818))
+start_enip(registry, enip_port) # Already starts its own thread
 
 # MQTT Client setup
 mqtt_broker = os.getenv("MQTT_BROKER", "localhost")

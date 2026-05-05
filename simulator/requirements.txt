@@ -5,6 +5,8 @@ pyyaml
 pymodbus
 bacpypes
 paho-mqtt
+asyncua
+cpppo
 
 # Compatibility for Python 3.12+ (for bacpypes)
 pyasyncore

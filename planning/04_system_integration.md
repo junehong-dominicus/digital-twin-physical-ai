@@ -27,7 +27,7 @@ To enable development without constant access to physical PLCs/SCADA systems, a 
 ### 2.1 Industrial Simulators
 | Target System | Simulation Software / Method |
 | :--- | :--- |
-| **PLC** | Modbus TCP/RTU, EtherNet/IP, OPC-UA simulation software (e.g., ModRSsim, CODESYS). |
+| **PLC / Industrial Hub** | Modbus TCP/RTU, EtherNet/IP, OPC-UA, BACnet, CANopen simulation software. |
 | **SCADA** | Virtual SCADA environments mapping to simulated PLCs. |
 | **Sensors** | Python-based multi-sensor simulators generating synthetic telemetry. |
 

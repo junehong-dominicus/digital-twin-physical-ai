@@ -34,10 +34,13 @@ def load_protocols():
     global _protocols_cache
     _protocols_cache.clear()
     
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    
     # Modbus
-    if os.path.exists("config/modbus_map.yaml"):
+    modbus_path = os.path.join(base_dir, "config", "modbus_map.yaml")
+    if os.path.exists(modbus_path):
         try:
-            with open("config/modbus_map.yaml", "r") as f:
+            with open(modbus_path, "r") as f:
                 modbus = yaml.safe_load(f) or {}
                 for section_name, section in modbus.items():
                     if isinstance(section, dict):
@@ -59,9 +62,10 @@ def load_protocols():
             print(f"Error loading modbus map: {e}")
 
     # BACnet
-    if os.path.exists("config/bacnet_map.yaml"):
+    bacnet_path = os.path.join(base_dir, "config", "bacnet_map.yaml")
+    if os.path.exists(bacnet_path):
         try:
-            with open("config/bacnet_map.yaml", "r") as f:
+            with open(bacnet_path, "r") as f:
                 bacnet = yaml.safe_load(f) or {}
                 for obj_type, objects in bacnet.items():
                     if isinstance(objects, dict):
@@ -168,7 +172,7 @@ def run_api(registry):
     global _registry
     _registry = registry
     # Configure uvicorn to run in a thread without signal handlers
-    port = int(os.getenv("SIM_PORT", 8080)) # Use a different default to avoid conflict
+    port = int(os.getenv("SIM_PORT", 8081)) # Changed from 8080 to 8081 to avoid conflict
     config = uvicorn.Config(app, host="0.0.0.0", port=port, log_level="info")
     server = uvicorn.Server(config)
     server.install_signal_handlers = lambda: None

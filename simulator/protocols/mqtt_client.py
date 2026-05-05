@@ -15,6 +15,12 @@ def set_mqtt_enabled(enabled: bool):
 def run_mqtt(registry, broker="localhost", port=1883, map_path="config/mqtt_map.yaml"):
     # Load MQTT topic map
     topic_map = {}
+    
+    # If map_path is relative, make it relative to the simulator directory
+    if not os.path.isabs(map_path):
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        map_path = os.path.join(base_dir, map_path)
+
     if os.path.exists(map_path):
         with open(map_path, "r") as f:
             config = yaml.safe_load(f)
@@ -23,7 +29,12 @@ def run_mqtt(registry, broker="localhost", port=1883, map_path="config/mqtt_map.
     else:
         logging.warning(f"MQTT map file not found at {map_path}. No topics will be published.")
 
-    client = mqtt.Client()
+    try:
+        # paho-mqtt 2.0+ requires explicit API version
+        client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1)
+    except AttributeError:
+        # Fallback for paho-mqtt 1.x
+        client = mqtt.Client()
     try:
         client.connect(broker, port, 60)
         client.loop_start()

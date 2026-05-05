@@ -1,17 +1,7 @@
-[build-system]
-requires = ["setuptools", "wheel"]
-build-backend = "setuptools.build_meta"
-
 [project]
 name = "digital-twin-physical-ai"
 version = "0.1.0"
-description = "LLM-Powered Digital Twin for Physical AI"
-readme = "README.md"
-requires-python = ">=3.10"
-license = "MIT"
-authors = [
-    {name = "Your Name", email = "your.email@example.com"}
-]
+description = "Industrial Digital Twin with Physical AI and Cognitive Reasoning"
 dependencies = [
     "fastapi",
     "uvicorn",
@@ -21,17 +11,18 @@ dependencies = [
     "python-dotenv",
     "langchain-openai",
     "langchain-core",
+    "langchain",
+    "langchain-community",
     "paho-mqtt",
+    "httpx",
+    "pytest",
+    "bacpypes",
+    "pymodbus>=3.0.0",
+    "PyYAML",
+    "pyasyncore",
+    "asyncua",
+    "cpppo",
 ]
 
-[tool.setuptools.packages.find]
-where = ["."]
-exclude = ["architecture", "monitoring", "docs", "blog", "visualization"]
-
-[tool.pytest.ini_options]
-pythonpath = [".", "Sensor-simulator"]
-testpaths = ["tests", "Sensor-simulator/tests"]
-filterwarnings = [
-    "ignore:local address at the application layer deprecated:DeprecationWarning",
-    "ignore:no signal handlers for child threads:UserWarning",
-]
+[tool.uv]
+managed = true

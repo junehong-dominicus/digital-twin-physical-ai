@@ -51,6 +51,14 @@ class SystemTwin:
             "temperature": 0.0,
             "vibration": 0.0,
         }
+        
+        # Edge AI Insights (Added for Edgie AI)
+        self.edge_ai: Dict[str, Any] = {
+            "anomaly_score": 0.0,
+            "active_alerts": [],
+            "last_inference": None
+        }
+
         self.status: str = "nominal"
         self.health_score: float = 1.0
         
@@ -62,76 +70,45 @@ class SystemTwin:
         self.agents: Dict[str, AgentTwin] = {}
 
     def update_environment(self, telemetry: dict):
-        """Update global environment state from telemetry (e.g., static IoT sensors)."""
+        """Update global environment state and Edge AI insights."""
         if "temperature" in telemetry:
             self.environment["temperature"] = telemetry["temperature"]
         if "vibration" in telemetry:
             self.environment["vibration"] = telemetry["vibration"]
-
-    def update_or_create_agent(self, agent_id: str, agent_type: str, telemetry: dict):
-        """Updates an existing agent twin or creates a new one."""
-        if agent_id not in self.agents:
-            self.agents[agent_id] = AgentTwin(agent_id, agent_type)
         
-        self.agents[agent_id].update_telemetry(telemetry)
-
-    def process_spatial_event(self, event: dict):
-        """
-        Process a structured spatial event (e.g., from CCTV perception layer).
-        """
-        event_type = event.get("event_type")
-        zone_id = event.get("zone")
-        timestamp = event.get("timestamp", datetime.now(timezone.utc).isoformat())
-
-        # Maintain a rolling log of the last 100 spatial events
-        self.recent_spatial_events.append(event)
-        if len(self.recent_spatial_events) > 100:
-            self.recent_spatial_events.pop(0)
-
-        # Initialize or update the state of the affected zone
-        if zone_id:
-            if zone_id not in self.zones:
-                self.zones[zone_id] = {
-                    "last_activity": None,
-                    "occupancy_count": 0,
-                    "detected_objects": {},
-                    "entry_log": []
+        # Process Edgie AI data
+        if "edge_ai" in telemetry:
+            ai_data = telemetry["edge_ai"]
+            self.edge_ai["anomaly_score"] = ai_data.get("score", 0.0)
+            if ai_data.get("alert"):
+                alert = {
+                    "reason": ai_data["alert"],
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "severity": "critical" if ai_data.get("score", 0) > 0.8 else "warning"
                 }
-            
-            zone_state = self.zones[zone_id]
-            zone_state["last_activity"] = timestamp
-
-            if event_type == "zone_entry":
-                zone_state["occupancy_count"] += 1
-                zone_state["entry_log"].append({
-                    "object_class": event.get("object_class"),
-                    "timestamp": timestamp
-                })
-            
-            elif event_type == "object_detection":
-                detection = event.get("detection", {})
-                obj_class = detection.get("class")
-                if obj_class:
-                    zone_state["detected_objects"][obj_class] = {
-                        "confidence": detection.get("confidence"),
-                        "pos_3d": detection.get("estimated_position_3d"),
-                        "last_seen": timestamp
-                    }
+                self.edge_ai["active_alerts"].append(alert)
+                # Keep only last 5 alerts
+                if len(self.edge_ai["active_alerts"]) > 5:
+                    self.edge_ai["active_alerts"].pop(0)
 
     def calculate_health_score(self) -> float:
         """
-        Calculates the aggregate health score (0.0 - 1.0) based on
-        environmental factors and agent statuses.
+        Calculates the aggregate health score (0.0 - 1.0).
+        Prioritizes Edge AI anomaly scores for real-time fault detection.
         """
         score = 1.0
         
-        # Environment Penalties (Example Thresholds)
+        # 1. Edge AI Penalty (Weighted Heavily)
+        # Anomaly score of 1.0 results in 0.5 health reduction
+        score -= (self.edge_ai["anomaly_score"] * 0.5)
+        
+        # 2. Environment Penalties (Baseline)
         if self.environment.get("temperature", 0) > 45.0:
-            score -= 0.2
+            score -= 0.1
         if self.environment.get("vibration", 0) > 0.05:
-            score -= 0.2
+            score -= 0.1
             
-        # Agent Penalties
+        # 3. Agent Penalties
         for agent in self.agents.values():
             if agent.status == "fault":
                 score -= 0.3
@@ -155,13 +132,13 @@ class SystemTwin:
 
     def get_state_summary_for_llm(self) -> dict:
         """
-        Generates a structured summary of the entire system state, suitable for
-        the cognitive layer (LLM).
+        Generates a structured summary for the LLM, including Edge AI insights.
         """
         self.calculate_health_score()
         return {
             "system_status": self.status,
             "health_score": round(self.health_score, 2),
+            "edge_ai_insights": self.edge_ai,
             "environment": self.environment,
             "active_zones": {
                 zone: {

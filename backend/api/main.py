@@ -10,8 +10,7 @@ from sqlalchemy import create_engine, desc
 from sqlalchemy.orm import sessionmaker, Session
 
 # Import the ORM model from the initialization script
-# (Assumes init_db.py is in the same directory)
-from init_db import SpatialEvent, Agent, Zone, SystemHealthHistory, Base
+from backend.core.init_db import SpatialEvent, Agent, Zone, SystemHealthHistory, Base
 
 app = FastAPI(title="LLM Digital Twin API")
 
