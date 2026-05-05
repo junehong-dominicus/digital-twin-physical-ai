@@ -6,7 +6,17 @@ class SensorRegistry:
         self.lock = Lock()
 
     def add(self, sensor):
+        from models.industrial import FACPSensor, PumpController
+        
+        # Check if we should upgrade the sensor to a specialized model
+        if hasattr(sensor, 'simulation_type'):
+            if sensor.simulation_type == "facp":
+                sensor = FACPSensor(sensor.name, **sensor.__dict__)
+            elif sensor.simulation_type == "pump":
+                sensor = PumpController(sensor.name, **sensor.__dict__)
+
         self.sensors[sensor.name] = sensor
+        return sensor
 
     def update_all(self):
         with self.lock:

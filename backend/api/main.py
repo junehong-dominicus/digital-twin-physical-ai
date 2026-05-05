@@ -146,8 +146,9 @@ def get_health_history(limit: int = 20, db: Session = Depends(get_db)):
     return data_points[::-1]
 
 # --- Static Files (Dashboard) ---
-# Mount the visualization directory to serve the frontend
-viewer_path = os.path.join(os.path.dirname(__file__), "visualization", "viewer")
+# Mount Phase 2 Dashboard (Research Prototype)
+viewer_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 
+                           "research", "spatial_dashboard", "viewer")
 if os.path.exists(viewer_path):
     app.mount("/dashboard", StaticFiles(directory=viewer_path, html=True), name="dashboard")
 else:

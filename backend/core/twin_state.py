@@ -71,12 +71,12 @@ class SystemTwin:
 
     def update_environment(self, telemetry: dict):
         """Update global environment state and Edge AI insights."""
-        if "temperature" in telemetry:
-            self.environment["temperature"] = telemetry["temperature"]
-        if "vibration" in telemetry:
-            self.environment["vibration"] = telemetry["vibration"]
+        # Generic environment update
+        for key, value in telemetry.items():
+            if key != "edge_ai":
+                self.environment[key] = value
         
-        # Process Edgie AI data
+        # Process Edgie AI data specifically
         if "edge_ai" in telemetry:
             ai_data = telemetry["edge_ai"]
             self.edge_ai["anomaly_score"] = ai_data.get("score", 0.0)

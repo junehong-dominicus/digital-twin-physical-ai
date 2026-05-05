@@ -2,92 +2,73 @@ import threading
 import time
 import os
 import logging
+import warnings
 from dotenv import load_dotenv
 import yaml
-import warnings
 
+# Load environment variables
 load_dotenv()
 
 from core.sensors import Sensor
 from core.registry import SensorRegistry
-from protocols.modbus_server import run_modbus
-from protocols.bacnet_server import run_bacnet
-from protocols.opcua_server import start_opcua
-from protocols.enip_server import start_enip
-from protocols.mqtt_client import run_mqtt, set_mqtt_enabled
+from core.simulation import start_simulation
+from services.modbus_server import run_modbus
+from services.bacnet_server import run_bacnet
+from services.opcua_server import start_opcua
+from services.enip_server import start_enip
+from services.mqtt_client import run_mqtt, set_mqtt_enabled
+from api.server import run_api
 
 # Configure logging
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
-
-# Suppress bacpypes thread warning
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 warnings.filterwarnings("ignore", message="no signal handlers for child threads")
-
-# Reduce noise from protocol libraries
 logging.getLogger("pymodbus").setLevel(logging.WARNING)
 logging.getLogger("bacpypes").setLevel(logging.WARNING)
 
-try:
-    registry = SensorRegistry()
-
-    # Get base directory of the script
+def load_config(registry):
     base_dir = os.path.dirname(os.path.abspath(__file__))
     config_path = os.path.join(base_dir, "config", "sensors.yaml")
+    
     if os.path.exists(config_path):
         with open(config_path, "r") as f:
             config = yaml.safe_load(f)
             for s in config.get("sensors", []):
                 registry.add(Sensor(**s))
         logging.info(f"Loaded {len(registry.sensors)} sensors from {config_path}")
-        if len(registry.sensors) < 10:
-            logging.debug(f"Loaded sensor names: {list(registry.sensors.keys())}")
     else:
-        logging.info("Config file not found, using default sensors")
+        logging.warning("Config file not found, using default sensors")
         registry.add(Sensor("temperature", "C", 22.0, -10, 50, writable=True))
-        registry.add(Sensor("humidity", "%", 50.0, 0, 100, writable=True))
-        registry.add(Sensor("pressure", "Pa", 101325, 98000, 105000, writable=True))
-except Exception as e:
-    with open("startup_error.log", "a") as f:
-        f.write(f"Registry initialization error: {e}\n")
-    raise
 
-def sensor_loop():
-    # Track previous values to log changes only
-    prev_values = {}
-    while True:
-        registry.update_all()
-        
-        # Verification: Log specific binary sensors when they change
-        for name in ["building_1_motion", "building_1_fire_alarm"]:
-            sensor = registry.get_sensor(name)
-            if sensor:
-                val = sensor.value
-                if prev_values.get(name) != val:
-                    logging.info(f"[VERIFY] {name} toggled to {val}")
-                    prev_values[name] = val
+def main():
+    logging.info("Initializing Industrial Protocol Simulator...")
+    registry = SensorRegistry()
+    load_config(registry)
 
-        time.sleep(1)
+    # 1. Start core simulation
+    start_simulation(registry)
 
-threading.Thread(target=sensor_loop, daemon=True).start()
-modbus_port = int(os.getenv("MODBUS_PORT", 5020))
-threading.Thread(target=run_modbus, args=(registry, modbus_port), daemon=True).start()
-bacnet_port = int(os.getenv("BACNET_PORT", 47808))
-threading.Thread(target=run_bacnet, args=(registry, bacnet_port), daemon=True).start()
+    # 2. Start industrial protocol servers
+    servers = [
+        (run_modbus, "MODBUS_PORT", 5020, "Modbus"),
+        (run_bacnet, "BACNET_PORT", 47808, "BACnet"),
+        (start_opcua, "OPCUA_PORT", 4840, "OPC-UA"),
+        (start_enip, "ENIP_PORT", 44818, "EtherNet/IP")
+    ]
 
-opcua_port = int(os.getenv("OPCUA_PORT", 4840))
-threading.Thread(target=start_opcua, args=(registry, opcua_port), daemon=True).start()
+    for func, env_var, default, name in servers:
+        port = int(os.getenv(env_var, default))
+        logging.info(f"Starting {name} server on port {port}...")
+        threading.Thread(target=func, args=(registry, port), daemon=True).start()
 
-enip_port = int(os.getenv("ENIP_PORT", 44818))
-start_enip(registry, enip_port) # Already starts its own thread
+    # 3. Start MQTT Client
+    mqtt_broker = os.getenv("MQTT_BROKER", "localhost")
+    mqtt_port = int(os.getenv("MQTT_PORT", 1883))
+    set_mqtt_enabled(os.getenv("MQTT_ENABLED", "True").lower() == "true")
+    threading.Thread(target=run_mqtt, args=(registry, mqtt_broker, mqtt_port), daemon=True).start()
 
-# MQTT Client setup
-mqtt_broker = os.getenv("MQTT_BROKER", "localhost")
-mqtt_port = int(os.getenv("MQTT_PORT", 1883))
-mqtt_enabled = os.getenv("MQTT_ENABLED", "True").lower() == "true"
-set_mqtt_enabled(mqtt_enabled)
-threading.Thread(target=run_mqtt, args=(registry, mqtt_broker, mqtt_port), daemon=True).start()
+    # 4. Start Dashboard API
+    logging.info("Starting Dashboard API on port 8081...")
+    run_api(registry) # This is blocking
 
-from api.server import run_api
-threading.Thread(target=run_api, args=(registry,), daemon=True).start()
-
-while True:
-    time.sleep(10)
+if __name__ == "__main__":
+    main()
