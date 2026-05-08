@@ -112,12 +112,13 @@ class PersistenceWorker:
 
     def run(self):
         self.running = True
-        self.client.connect(self.broker, self.port, 60)
-        
-        # Start MQTT loop in a separate thread
-        self.client.loop_start()
-        
-        print(f"Persistence Worker started. Monitoring {self.broker}:{self.port}...")
+        try:
+            self.client.connect(self.broker, self.port, 60)
+            # Start MQTT loop in a separate thread
+            self.client.loop_start()
+            print(f"Persistence Worker started. Monitoring {self.broker}:{self.port}...")
+        except Exception as e:
+            print(f"⚠️ Persistence Worker: Could not connect to MQTT broker ({e}). Retrying in background...")
         
         try:
             while self.running:

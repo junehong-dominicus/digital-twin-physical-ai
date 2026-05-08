@@ -2,7 +2,7 @@
 #include "esp_log.h"
 #include "esp_heap_caps.h"
 #include <string.h>
-#include "anomaly_detector.h" // Embedded model
+#include "anomaly_detector.h" // Embedded model array
 
 static const char *TAG = "EDGE_AI_MGR";
 
@@ -38,26 +38,12 @@ esp_err_t ai_model_manager_init(void) {
     if (s_meta_data == NULL) {
         s_meta_data = (ai_metadata_t *)heap_caps_malloc(sizeof(ai_metadata_t), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
         if (s_meta_data) {
-            // Feature 0: pump_vibration
-            s_meta_data->norms[0].min_val = -18.1907f;
-            s_meta_data->norms[0].max_val = -17.4667f;
-            // Feature 1: pump_pressure
-            s_meta_data->norms[1].min_val = -12.2957f;
-            s_meta_data->norms[1].max_val = 22.9156f;
-            // Feature 2: smoke_obscuration
-            s_meta_data->norms[2].min_val = -6.0559f;
-            s_meta_data->norms[2].max_val = -2.2274f;
-            // Feature 3: facp_voltage
-            s_meta_data->norms[3].min_val = -0.1428f;
-            s_meta_data->norms[3].max_val = -0.0643f;
-            // Feature 4: sprinkler_flow
-            s_meta_data->norms[4].min_val = -1.0389f;
-            s_meta_data->norms[4].max_val = 5.3714f;
-            // Feature 5: heat_rate
-            s_meta_data->norms[5].min_val = 0.0f;
-            s_meta_data->norms[5].max_val = 1.0f;
-
-            ESP_LOGI(TAG, "Normalization metadata loaded.");
+            // Use auto-generated normalization metadata from anomaly_detector.h
+            for (int i = 0; i < AI_FEATURE_DIM; i++) {
+                s_meta_data->norms[i].min_val = ANOMALY_MODEL_NORMS[i].min;
+                s_meta_data->norms[i].max_val = ANOMALY_MODEL_NORMS[i].max;
+            }
+            ESP_LOGI(TAG, "Normalization metadata loaded from header.");
         } else {
             ESP_LOGE(TAG, "Metadata allocation failed");
             return ESP_ERR_NO_MEM;
@@ -82,4 +68,3 @@ size_t ai_model_manager_get_model_size(void) {
 uint16_t ai_model_manager_get_model_crc(void) {
     return s_model_crc;
 }
-

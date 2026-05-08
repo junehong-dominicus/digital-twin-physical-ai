@@ -214,3 +214,24 @@ Sensor-simulator/output.txt
 Sensor-simulator/output2.txt
 Sensor-simulator/test_results.txt
 digital_twin.db
+
+# ESP-IDF
+sdkconfig
+sdkconfig.old
+build/
+dependencies.lock
+managed_components/
+
+# ML Artifacts
+edge-ai/models/*.tflite
+edge-ai/models/*.joblib
+edge-ai/models/*.h
+edge-ai/.venv/
+
+# Firmware AI Artifacts (Auto-generated)
+firmware/protocol_node/components/ai_engine/include/anomaly_detector.h
+
+# Logs and temporary files
+*.log
+bacpypes_detailed.log
+sync_header.py

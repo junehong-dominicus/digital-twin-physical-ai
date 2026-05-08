@@ -22,6 +22,9 @@ dependencies = [
     "pyasyncore",
     "asyncua",
     "cpppo",
+    "tensorflow-cpu",
+    "scikit-learn",
+    "joblib",
 ]
 
 [tool.uv]

@@ -66,6 +66,41 @@ def prepare_data():
 # 3. TRAINING & CONVERSION
 # ─────────────────────────────────────────────────────────────────────────────
 
+def export_to_header(tflite_model, scaler, header_path):
+    """
+    Converts TFLite model and normalization metadata into a C header file.
+    """
+    print(f">>> Exporting C header to {header_path}...")
+    
+    # 1. Prepare Normalization Metadata
+    # Scaler min/max for each feature
+    mins = scaler.data_min_
+    maxs = scaler.data_max_
+    
+    with open(header_path, 'w') as f:
+        f.write("/* Auto-generated Edge AI Model Header */\n")
+        f.write("#ifndef ANOMALY_DETECTOR_H\n")
+        f.write("#define ANOMALY_DETECTOR_H\n\n")
+        
+        # Write Normalization Data
+        f.write("// Normalization Metadata (Min/Max values from training set)\n")
+        f.write("typedef struct {\n    float min;\n    float max;\n} feature_norm_entry_t;\n\n")
+        f.write(f"const feature_norm_entry_t ANOMALY_MODEL_NORMS[{len(mins)}] = {{\n")
+        for m_min, m_max in zip(mins, maxs):
+            f.write(f"    {{ {m_min:.6f}f, {m_max:.6f}f }},\n")
+        f.write("};\n\n")
+        
+        # Write TFLite Model Array
+        f.write(f"const unsigned char anomaly_detector_tflite[] = {{\n    ")
+        for i, byte in enumerate(tflite_model):
+            f.write(f"0x{byte:02x}, ")
+            if (i + 1) % 12 == 0:
+                f.write("\n    ")
+        f.write("\n};\n\n")
+        f.write(f"const unsigned int anomaly_detector_tflite_len = {len(tflite_model)};\n\n")
+        
+        f.write("#endif // ANOMALY_DETECTOR_H\n")
+
 def train_and_export():
     print(">>> Generating synthetic field data...")
     data_train, scaler = prepare_data()
@@ -97,15 +132,27 @@ def train_and_export():
     converter.optimizations = [tf.lite.Optimize.DEFAULT]
     tflite_model = converter.convert()
     
-    with open('models/anomaly_detector.tflite', 'wb') as f:
+    # Save .tflite
+    tflite_path = 'models/anomaly_detector.tflite'
+    with open(tflite_path, 'wb') as f:
         f.write(tflite_model)
-    
-    print(f"✓ Model saved to models/anomaly_detector.tflite ({len(tflite_model)/1024:.1f} KB)")
+    print(f"SUCCESS: Model saved to {tflite_path} ({len(tflite_model)/1024:.1f} KB)")
 
-    # Save scaler parameters for use in firmware
+    # Save .h (New!)
+    # 1. Local copy for reference
+    local_header = 'models/anomaly_detector.h'
+    export_to_header(tflite_model, scaler, local_header)
+    
+    # 2. Firmware copy for direct build integration
+    firmware_header = '../firmware/protocol_node/components/ai_engine/include/anomaly_detector.h'
+    if os.path.exists(os.path.dirname(firmware_header)):
+        export_to_header(tflite_model, scaler, firmware_header)
+        print(f"SUCCESS: Synchronized header to firmware: {firmware_header}")
+
+    # Save scaler parameters for use in Python environments
     import joblib
     joblib.dump(scaler, 'models/scaler.joblib')
-    print("✓ Scaler saved to models/scaler.joblib")
+    print("SUCCESS: Scaler saved to models/scaler.joblib")
 
 if __name__ == "__main__":
     train_and_export()

@@ -49,7 +49,12 @@ def main():
                 # Check if process died
                 if proc.poll() is not None:
                     print(f"❌ {name} process has stopped unexpectedly!")
-                    sys.exit(1)
+                    if name in ["SIMULATOR", "API"]:
+                        print("CRITICAL process died. Shutting down system...")
+                        sys.exit(1)
+                    else:
+                        print("Non-critical process died. Continuing...")
+                        processes.remove((proc, name))
                 
                 # Non-blocking check for output (optional, keeping it simple here)
                 # In a real tool, we might want to pipe logs to files

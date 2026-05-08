@@ -23,6 +23,12 @@ class FieldDataGenerator:
             sample[5] += np.random.uniform(1, 2)
         return sample
 
+    def generate_normal(self, count=1000):
+        return [self.generate_sample(is_anomaly=False) for _ in range(count)]
+
+    def generate_anomalies(self, count=100):
+        return [self.generate_sample(is_anomaly=True) for _ in range(count)]
+
 def main():
     parser = argparse.ArgumentParser(description="Industrial Edge AI Field Data Injector")
     parser.add_argument("--broker", default="127.0.0.1", help="MQTT Broker IP")

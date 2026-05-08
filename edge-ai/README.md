@@ -1,51 +1,70 @@
-# Industrial Edge AI: Simulation & Deployment Tools
+# Edge AI Tooling & ML Ops
 
-This directory contains utility scripts for validating the Edge AI integration and deploying TFLite models to the Digital Twin Physical AI firmware.
+This directory contains the Python-based machine learning pipeline for the Digital Twin Physical AI platform. It handles data generation, model training, and Over-The-Air (OTA) deployment to the firmware's AI Engine.
 
-For a detailed guide on training your own models, see: **[EDGE_AI_WORKFLOW.md](EDGE_AI_WORKFLOW.md)**
+## 🚀 Quick Start
 
-## Tools Overview
-
-### 1. Field Data Generator (`field_data_generator.py`)
-Generates synthetic industrial telemetry data and injects it directly into the dashboard or AI inference pipeline. This tool is configured to match the 6-dimensional feature vector used by the firmware.
-
-**Usage:**
+### 1. Setup Environment
+We recommend using `uv` or `venv`:
 ```bash
-uv run field_data_generator.py --broker 127.0.0.1 --node ai-node-01
+# Using uv
+uv sync
+
+# Using pip
+pip install -r requirements.txt
 ```
-- **Normal Mode**: Generates stable sensor values with minor noise.
-- **Anomaly Mode**: Use `--anomaly` to inject spikes and drift for testing detection triggers.
 
-### 2. Model OTA CLI (`model_ota_cli.py`)
-The primary tool for deploying new AI models to the edge hardware without requiring a physical serial connection.
-
-**Usage:**
+### 2. Generate Data & Train Model
+The trainer script automatically generates synthetic industrial data and produces an optimized TFLite model:
 ```bash
-python model_ota_cli.py --model path/to/model.tflite --target <DEVICE_IP>
+python edge_ai_trainer.py
 ```
-- **Verification**: Automatically calculates and verifies the CRC16 before and after transmission.
-- **Protocol**: Uses the EHIF Model OTA command set (`0xA3` - `0xA5`).
+Outputs will be saved in the `models/` directory:
+- `models/anomaly_detector.tflite`: Quantized model for ESP32.
+- `models/scaler.joblib`: Normalization parameters for the Python environment.
 
-## Workflow for Initial Deployment
-
-If your device logs show a `Model schema mismatch`, follow these steps:
-
-1. **Prepare Model**: Ensure you have a valid `.tflite` model (Version 3 schema).
-2. **Deploy**: Run the `model_ota_cli.py` script.
-3. **Verify**: Check the device serial logs. You should see:
-   - `EDGE_AI_MGR: Model verified. CRC16: 0x...`
-   - `EDGE_AI: TFLM Interpreter ready.`
-4. **Monitor**: Use the Digital Twin Dashboard to view the real-time anomaly score.
-
-## Dependencies
-- Python 3.10+
-- `pyserial` (for local serial testing)
-- `requests` (if using the REST/EHIF gateway)
-
-## Building Executables
-If you modify the source code and need to regenerate the `.exe` files, run:
+### 3. Inject Live Data for Testing
+Simulate a running machine by injecting data into your MQTT broker:
 ```bash
-python build_exe.py
-```
-This will use `PyInstaller` to package the scripts into the `dist/` directory.
+# Normal data
+python field_data_generator.py --broker localhost --interval 0.5
 
+# Anomaly data (injects vibration and heat spikes)
+python field_data_generator.py --broker localhost --anomaly
+```
+
+### 4. Deploy Model (OTA)
+Push a new model to a running device without re-flashing:
+```bash
+# Via Serial
+python model_ota_cli.py --mode serial --port COM3 --file models/anomaly_detector.tflite
+
+# Via MQTT
+python model_ota_cli.py --mode mqtt --broker 192.168.1.50 --file models/anomaly_detector.tflite
+```
+
+---
+
+## 🛠️ Tool Descriptions
+
+### [edge_ai_trainer.py](edge_ai_trainer.py)
+The core ML pipeline.
+- **Autoencoder (MLP)**: Default architecture for unsupervised anomaly detection.
+- **GRU**: Recurrent architecture for time-series forecasting.
+- **Quantization**: Automatically applies `INT8` quantization for efficient MCU execution.
+
+### [field_data_generator.py](field_data_generator.py)
+Industrial sensor simulator.
+- **Features**: Vibration (g), Pressure (PSI), Smoke (%), Voltage (V), Flow (GPM), Heat Rate (°C/s).
+- **Modes**: Library use for training datasets or standalone MQTT publisher for system testing.
+
+### [model_ota_cli.py](model_ota_cli.py)
+Deployment tool implementing the EHIF Model Update protocol.
+- **Chunking**: Splits large models into 256/512 byte packets.
+- **Verification**: Uses START/DATA/END sequence to ensure atomic updates on the device.
+
+---
+
+## 📖 Detailed Guides
+- [Edge AI Workflow & Best Practices](EDGE_AI_WORKFLOW.md)
+- [Firmware AI Engine Documentation](../docs/specs/ai_engine_technical_specification.md)
